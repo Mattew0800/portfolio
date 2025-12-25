@@ -1,0 +1,51 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.screen-container {
+  background: #000;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  color: #fff;
+  font-size: 12rem;
+}
+
+.main__options{
+  list-style: none;
+  text-align: center;
+}
+
+.main__options li{
+  color: red;
+  cursor: pointer;
+
+  &:hover {
+    color: cyan;
+  }
+}
+
+.back-button {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  color: white;
+  padding: 15px 30px;
+  font-size: 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Segoe UI', Arial, sans-serif;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateX(-5px);
+  }
+}
