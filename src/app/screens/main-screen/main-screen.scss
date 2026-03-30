@@ -14,16 +14,25 @@
   position: relative;
   color: #fff;
   font-size: 12rem;
+  font-family: monospace;
 }
 
-.main__options{
+.main__options {
   list-style: none;
   text-align: center;
+  padding: 0;
+  margin: 0;
+
+  p {
+    margin-bottom: 60px;
+    color: #fff;
+  }
 }
 
-.main__options li{
+.main__options li {
   color: red;
   cursor: pointer;
+  margin: 20px 0;
 
   &:hover {
     color: cyan;

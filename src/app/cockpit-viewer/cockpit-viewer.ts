@@ -243,8 +243,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                     component = ShipModuleScreen;
                     break;
                 case 'Plane_2':
-                    // Usar imagen en lugar de componente
-                    this.loadImageToScreen(mesh, 'assets/cockpit_modules.jpg');
+                    component = LogScreen;
                     break;
                 case 'Plane_3':
                     component = MainScreen;
@@ -590,6 +589,11 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                 // Guardar referencias
                 this.screenCanvases.set(mesh.name, canvas);
                 this.screenTextures.set(mesh.name, texture);
+
+                if (mesh.name === 'Plane_3') {
+                    this.hoverTextures.set(-1, texture);
+                    console.log(`   ✅ Textura de MainScreen guardada como base (índice -1)`);
+                }
 
                 console.log(`   ✅ Textura creada y aplicada desde componente a ${mesh.name}`);
 
@@ -1124,11 +1128,11 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         // Asegurar matrices
         screenMesh.updateMatrixWorld(true);
 
-        // --- Parámetros para iteración rápida (vamos ajustando estos contigo) ---
+        // --- Parámetros para iteración rápida
         const DEBUG_OPACITY = 0.06;
-        const SHOW_DEBUG_COLORS = false; // pon true si quieres ver colores de guía
+        const SHOW_DEBUG_COLORS = false;
         const NORMAL_OFFSET = 0.02;
-        const GLOBAL_SHIFT_FACTOR = -0.09; // Desplaza todos los planos un poco hacia abajo en el eje de apilado
+        const GLOBAL_SHIFT_FACTOR = 0.02; // Desplaza todos los planos
 
         // (alto > ancho)
         const PLANE_WIDTH_FACTOR = 0.12; // antes 0.10, un poco más ancho
@@ -1458,7 +1462,14 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             const items = ['HOME', 'PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT'];
             const listHTML = items.map((item, index) => {
                 const color = index === hoveredIndex ? 'cyan' : 'red';
-                return `<li class="main__options-li" style="color: ${color}; cursor: pointer; margin: 20px 0;">[ ${item} ]</li>`;
+                // Espacios exactos como en el componente HTML
+                let spacing = '';
+                if (index === 0) spacing = '[ HOME ]';
+                else if (index === 1) spacing = '[ PROJECTS ]';
+                else if (index === 2) spacing = '[ SKILLS ]';
+                else if (index === 3) spacing = '[ ABOUT ]';
+                else if (index === 4) spacing = '[ CONTACT ]';
+                return `<li class="main__options-li" style="color: ${color}; cursor: pointer; margin: 20px 0;">${spacing}</li>`;
             }).join('');
 
             hostElement.innerHTML = `
