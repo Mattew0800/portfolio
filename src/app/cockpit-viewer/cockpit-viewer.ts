@@ -45,9 +45,11 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         ['Plane_3', '/main']
     ]);
     private liRoutes: Record<string, string> = {
+        home: '/main', // u otra ruta que corresponda a home
         projects: '/projects', // TODO: ajusta con la ruta real que desees
         skills: '/education',     // TODO: ajusta con la ruta real que desees
-        experience: '/training' // TODO: ajusta con la ruta real que desees
+        about: '/training', // TODO: ajusta con la ruta real que desees
+        contact: '/contact' // TODO: ajusta con la ruta real que desees
     };
     private interactivePlanes: THREE.Mesh[] = [];
     private hoveredPlane: THREE.Mesh | null = null;
@@ -149,11 +151,11 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                 // Convertir texturas de imagen a video textures
                 this.setupVideoTextures(gltf.scene);
 
-                // Agregar luz puntual muy suave en el cockpit
-                const cockpitLight = new THREE.PointLight(0xffffff, 0.3, 5); // Intensidad 0.3, distancia 5
+                // Agregar luz puntual muy suave en el cockpit con tonos cálidos (naranja/dorado)
+                const cockpitLight = new THREE.PointLight(0xffb366, 0.5, 8); // Color cálido (naranja-dorado), intensidad aumentada a 0.5, distancia 8
                 cockpitLight.position.set(0, 1.5, -11); // Posición cerca del cockpit
                 this.scene.add(cockpitLight);
-                console.log('💡 Luz suave agregada en el cockpit');
+                console.log('💡 Luz cálida agregada en el cockpit');
 
                 // BUSCAR Y USAR LA CÁMARA ESPECÍFICA DEL MODELO
                 const sceneCamera = this.findCameraByName(gltf.scene, 'Camera'); // Cambia 'Camera' por el nombre de tu cámara
@@ -213,6 +215,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                 // Buscar y almacenar las pantallas (Plane1, Plane2, Plane3)
                 this.findScreens(gltf.scene);
 
+
                 // Configurar contenido de las pantallas
                 this.setupScreenContent();
 
@@ -240,8 +243,8 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                     component = ShipModuleScreen;
                     break;
                 case 'Plane_2':
-                    component = LogScreen;
-
+                    // Usar imagen en lugar de componente
+                    this.loadImageToScreen(mesh, 'assets/cockpit_modules.jpg');
                     break;
                 case 'Plane_3':
                     component = MainScreen;
@@ -599,6 +602,57 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                 this.cleanup(componentRef, hostElement);
             });
         }, 500);
+    }
+
+    private loadImageToScreen(mesh: THREE.Mesh, imagePath: string): void {
+        console.log(`   🖼️ Cargando imagen para pantalla: ${mesh.name} desde ${imagePath}`);
+
+        const textureLoader = new THREE.TextureLoader();
+
+        textureLoader.load(
+            imagePath,
+            (texture: THREE.Texture) => {
+                // Configurar la textura
+                texture.minFilter = THREE.LinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+                texture.flipY = true;
+                texture.wrapS = THREE.ClampToEdgeWrapping;
+                texture.wrapT = THREE.ClampToEdgeWrapping;
+
+                // Crear material con la textura
+                const newMaterial = new THREE.MeshBasicMaterial({
+                    map: texture,
+                    side: THREE.DoubleSide,
+                    transparent: false,
+                    opacity: 1
+                });
+
+                // Dispose del material anterior si existe
+                if (mesh.material) {
+                    if (Array.isArray(mesh.material)) {
+                        mesh.material.forEach(mat => mat.dispose());
+                    } else {
+                        mesh.material.dispose();
+                    }
+                }
+
+                // Asignar nuevo material
+                mesh.material = newMaterial;
+                mesh.material.needsUpdate = true;
+                mesh.visible = true;
+                mesh.frustumCulled = false;
+                mesh.renderOrder = 999;
+
+                console.log(`   ✅ Imagen cargada y aplicada a ${mesh.name}`);
+            },
+            (progress: ProgressEvent) => {
+                const percent = (progress.loaded / progress.total) * 100;
+                console.log(`   📥 Cargando imagen para ${mesh.name}: ${percent.toFixed(2)}%`);
+            },
+            (err: unknown) => {
+                console.error(`   ❌ Error al cargar imagen para ${mesh.name}:`, err);
+            }
+        );
     }
 
     private async renderDOMToCanvasSimple(element: HTMLElement, targetCanvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D): Promise<void> {
@@ -969,35 +1023,6 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         }
     }
 
-    private addScreenHelpers(): void {
-        console.log('🔧 Agregando helpers visuales para pantallas...');
-
-        this.screenMeshes.forEach((mesh, index) => {
-            // Crear un borde alrededor de cada pantalla
-            const edges = new THREE.EdgesGeometry(mesh.geometry);
-            const lineMaterial = new THREE.LineBasicMaterial({
-                color: index === 0 ? 0xff0000 : index === 1 ? 0x00ff00 : 0x0000ff,
-                linewidth: 5
-            });
-            const wireframe = new THREE.LineSegments(edges, lineMaterial);
-
-            // Copiar transformación del mesh
-            wireframe.position.copy(mesh.position);
-            wireframe.rotation.copy(mesh.rotation);
-            wireframe.scale.copy(mesh.scale);
-
-            // Si el mesh tiene un parent, agregar el wireframe al mismo parent
-            if (mesh.parent) {
-                mesh.parent.add(wireframe);
-            } else {
-                this.scene.add(wireframe);
-            }
-
-            console.log(`   ✅ Helper agregado para "${mesh.name}" con color ${index === 0 ? 'rojo' : index === 1 ? 'verde' : 'azul'}`);
-        });
-
-        console.log('✅ Helpers visuales agregados');
-    }
 
     private generatePlaneUVs(geometry: THREE.BufferGeometry): void {
         const positions = geometry.attributes['position'];
@@ -1145,9 +1170,11 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         // Items (orden de arriba a abajo): EXACTAMENTE 3
         // Para agregar otro ítem en el futuro, añade aquí otro objeto { name: 'nuevo', idx: 3, color: 0xff00ff }
         const liItems = [
-            { name: 'projects', idx: 0, color: 0xff0000 },
-            { name: 'skills', idx: 1, color: 0x00ff00 },
-            { name: 'experience', idx: 2, color: 0x0000ff }
+            { name: 'home', idx: 0, color: 0xffffff },
+            { name: 'projects', idx: 1, color: 0xff0000 },
+            { name: 'skills', idx: 2, color: 0x00ff00 },
+            { name: 'about', idx: 3, color: 0x0000ff },
+            { name: 'contact', idx: 4, color: 0xffff00 }
         ] as const;
 
         liItems.forEach((item) => {
@@ -1391,7 +1418,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
 
         console.log('🎨 Pre-renderizando texturas de hover...');
 
-        const items = ['PROJECTS', 'SKILLS', 'EXPERIENCE'];
+        const items = ['HOME', 'PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT'];
 
         // Renderizar textura para cada estado (incluyendo sin hover = -1)
         for (let hoveredIndex = -1; hoveredIndex < items.length; hoveredIndex++) {
@@ -1428,7 +1455,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             document.body.appendChild(hostElement);
 
             // Crear el HTML del componente con hover aplicado
-            const items = ['PROJECTS', 'SKILLS', 'EXPERIENCE'];
+            const items = ['HOME', 'PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT'];
             const listHTML = items.map((item, index) => {
                 const color = index === hoveredIndex ? 'cyan' : 'red';
                 return `<li class="main__options-li" style="color: ${color}; cursor: pointer; margin: 20px 0;">[ ${item} ]</li>`;
@@ -1514,7 +1541,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         document.body.appendChild(hostElement);
 
         // Crear el HTML del componente con hover aplicado
-        const items = ['PROJECTS', 'SKILLS', 'EXPERIENCE'];
+        const items = ['HOME', 'PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT'];
         const listHTML = items.map((item, index) => {
             const color = index === hoveredIndex ? 'cyan' : 'red';
             return `<li class="main__options-li" style="color: ${color}; cursor: pointer; margin: 20px 0;">[ ${item} ]</li>`;
@@ -1523,7 +1550,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         hostElement.innerHTML = `
       <div class="screen-container" style="background: #000; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12rem; font-family: monospace;">
         <ul class="main__options" style="list-style: none; text-align: center; padding: 0; margin: 0;">
-          <p style="margin-bottom: 60px; color: #fff;">SELECT MODULE</p>
+          <p style="margin-bottom: 60px; color: #fff;">SELECCIONAR MODULOl</p>
           ${listHTML}
         </ul>
       </div>
@@ -1785,31 +1812,6 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
 
         console.log(`   ✅ Textura "${propName}" REEMPLAZADA con VideoTexture`);
         console.log(`   🎬 El video debería empezar a reproducirse pronto...`);
-    }
-
-    private startCameraDebug(): void {
-        // Mostrar posición de la cámara cada segundo
-        this.debugInterval = window.setInterval(() => {
-            if (this.camera) {
-                // console.clear(); // Desactivado para ver información del modelo
-                console.log('═══════════════════════════════════════');
-                console.log('📹 POSICIÓN DE LA CÁMARA EN TIEMPO REAL');
-                console.log('═══════════════════════════════════════');
-                console.log('Position:');
-                console.log(`   x: ${this.camera.position.x.toFixed(3)}`);
-                console.log(`   y: ${this.camera.position.y.toFixed(3)}`);
-                console.log(`   z: ${this.camera.position.z.toFixed(3)}`);
-                console.log('Rotation (radianes):');
-                console.log(`   x: ${this.camera.rotation.x.toFixed(3)}`);
-                console.log(`   y: ${this.camera.rotation.y.toFixed(3)}`);
-                console.log(`   z: ${this.camera.rotation.z.toFixed(3)}`);
-                console.log('Otros:');
-                console.log(`   FOV: ${this.camera.fov}°`);
-                console.log(`   Target (lookAt): (${this.controls.target.x.toFixed(3)}, ${this.controls.target.y.toFixed(3)}, ${this.controls.target.z.toFixed(3)})`);
-                console.log('═══════════════════════════════════════');
-                console.log('💡 Mueve la cámara con el mouse y dime dónde quieres que quede');
-            }
-        }, 1000);
     }
 
     private applyControlRestrictions(): void {
