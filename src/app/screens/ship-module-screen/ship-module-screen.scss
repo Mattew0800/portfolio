@@ -2,18 +2,64 @@
   display: block;
   width: 100%;
   height: 100%;
+  background-color: black;
 }
 
-.screen-container {
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-  color: white;
-  padding: 80px;
-  font-family: 'Segoe UI', Arial, sans-serif;
-  height: 100%;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
+.ship-wrapper {
   position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ship-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.ship-wrapper svg {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  z-index: 10;
+}
+
+/*
+ * Para modificar la altura de módulos específicos dentro del SVG,
+ * puedes apuntar a sus IDs (dado que tu SVG tiene IDs como "MODULO 1", "MODULO 2", etc.).
+ * Si necesitas despazarlos o transformarlos, usa transform: translateY(...) o scaleY(...)
+ */
+#MODULO\ 1 {
+  transform: translateY(.7rem); /* Ejemplo: bajar el primer módulo 10px */
+}
+
+#MODULO\ 2 {
+  transform: translateY(.7rem); /* Ejemplo: subir el segundo módulo 5px */
+}
+
+#MODULO\ 3 {
+  transform: translateY(.5rem); /* Ejemplo: subir el segundo módulo 5px */
+
+}
+
+#MODULO\ 4 {
+  transform: translateY(.3rem); /* Ejemplo: subir el segundo módulo 5px */
+
+}
+
+#MODULO\ 5 {
+  transform: translateY(.1rem); /* Ejemplo: subir el segundo módulo 5px */
+
 }
 
 .back-button {
@@ -29,42 +75,18 @@
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: 'Segoe UI', Arial, sans-serif;
+  z-index: 20;
 
   &:hover {
     background: rgba(255, 255, 255, 0.3);
-    transform: translateX(-5px);
+    transform: scale(1.05);
   }
 }
 
-.screen-title {
-  margin: 0 0 60px 0;
-  font-size: 100px;
-  font-weight: 600;
-  text-align: center;
-  padding-bottom: 30px;
-}
-
-.projects-list {
-  display: flex;
-  flex-direction: column;
-  gap: 50px;
-  flex: 1;
-}
-
-.project-card {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 40px 50px;
-  border-radius: 20px;
-
-  h2 {
-    margin: 0 0 25px 0;
-    font-size: 70px;
-    font-weight: 500;
-  }
-
-  .tech-stack {
-    margin: 0;
-    font-size: 50px;
-    opacity: 0.85;
-  }
+.ship-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }

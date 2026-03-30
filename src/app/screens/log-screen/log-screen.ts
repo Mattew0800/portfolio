@@ -1,17 +1,21 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import {Component, OnInit} from '@angular/core';
+import {ModuleStateService} from "../../services/module-state.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-log-screen',
-  standalone: true,
   imports: [],
   templateUrl: './log-screen.html',
   styleUrl: './log-screen.scss',
 })
-export class LogScreen {
-  constructor(private router: Router) {}
+export class LogScreen{
 
-  goBack(): void {
-    this.router.navigate(['/']);
-  }
+    constructor(
+        private router: Router
+    ) {}
+
+    goBack(): void {
+        this.router.navigate(['/']);
+    }
+
 }

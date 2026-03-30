@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LogScreen } from './log-screen';
+import { HomePage } from './home-page';
 
-describe('LogScreen', () => {
-  let component: LogScreen;
-  let fixture: ComponentFixture<LogScreen>;
+describe('HomePage', () => {
+  let component: HomePage;
+  let fixture: ComponentFixture<HomePage>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LogScreen]
+      imports: [HomePage]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(LogScreen);
+    fixture = TestBed.createComponent(HomePage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

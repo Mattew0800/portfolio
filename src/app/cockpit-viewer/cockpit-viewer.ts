@@ -45,11 +45,11 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         ['Plane_3', '/main']
     ]);
     private liRoutes: Record<string, string> = {
-        home: '/main', // u otra ruta que corresponda a home
-        projects: '/projects', // TODO: ajusta con la ruta real que desees
-        skills: '/education',     // TODO: ajusta con la ruta real que desees
-        about: '/training', // TODO: ajusta con la ruta real que desees
-        contact: '/contact' // TODO: ajusta con la ruta real que desees
+        home: '/home',
+        projects: '/projects',
+        skills: '/skills',
+        about: '/about',
+        contact: '/contact'
     };
     private interactivePlanes: THREE.Mesh[] = [];
     private hoveredPlane: THREE.Mesh | null = null;
