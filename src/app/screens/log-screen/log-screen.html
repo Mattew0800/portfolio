@@ -1,4 +1,19 @@
 <div class="page-container">
     <button class="back-button" (click)="goBack()">← Volver</button>
-    <p>logs-page works!</p>
+
+    <div class="terminal">
+        <div class="terminal-header">
+            <span class="terminal-title">SCI-FI SYSTEM TERMINAL v1.0</span>
+            <span class="terminal-status">● ONLINE</span>
+        </div>
+
+        <div class="terminal-content">
+            <div class="logs-container">
+                <div *ngFor="let log of logs" class="log-line" [class.empty]="log === ''">
+                    <span class="log-text">{{ log }}</span>
+                </div>
+                <div class="cursor" *ngIf="logs.length > 0"></div>
+            </div>
+        </div>
+    </div>
 </div>
