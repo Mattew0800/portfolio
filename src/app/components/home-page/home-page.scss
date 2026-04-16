@@ -42,6 +42,13 @@ $font-mono:    'Share Tech Mono', monospace;
   50%       { opacity: .9;  }
 }
 
+@keyframes text-flicker {
+  0% { opacity: 1; }
+  2% { opacity: 0.8; }
+  4% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
 // ─────────────────────────────────────────────────────────────────
 // UTILIDAD: fade-in con delay variable
 // ─────────────────────────────────────────────────────────────────
@@ -65,7 +72,6 @@ $font-mono:    'Share Tech Mono', monospace;
   align-items: center;
   justify-content: center;
   font-family: $font-mono;
-  cursor: crosshair; // P4: cursor estilo sistema
 
   // Punto focal: luz radial centrada que refuerza jerarquía
   &::before {
@@ -128,7 +134,8 @@ $font-mono:    'Share Tech Mono', monospace;
   width: 100%;
   height: 2px;
   background: rgba($accent, .06);
-  animation: scan 7s linear infinite;
+  animation: scan 5.5s linear infinite;
+  //animation-delay: -2s;
 }
 
 // Grid reducido para no competir con el contenido
@@ -183,7 +190,7 @@ $font-mono:    'Share Tech Mono', monospace;
   font-size: 9px;
   letter-spacing: 4px;
   padding: 5px 16px;
-  margin-bottom: 22px;
+  margin-bottom: 32px;
   text-transform: uppercase;
   background: rgba($accent, .05);
 
@@ -199,7 +206,7 @@ $font-mono:    'Share Tech Mono', monospace;
 // ─── Bloque de nombre ────────────────────────────────────────────
 .name-block {
   position: relative;
-  margin-bottom: 40px; // más aire debajo del nombre
+  margin-bottom: 56px;
   line-height: 1;
 }
 
@@ -237,7 +244,7 @@ $font-mono:    'Share Tech Mono', monospace;
     transform: translateX(-50%);
     color: #fff;
     pointer-events: none;
-    animation: glitch 9s 4s infinite;
+    animation: glitch 9s 5s infinite;
     user-select: none;
     text-shadow: none; // glitch sin glow para que el efecto clip sea nítido
   }
@@ -251,15 +258,37 @@ $font-mono:    'Share Tech Mono', monospace;
   opacity: .7;           // nivel 2
   text-transform: uppercase;
   margin-bottom: 6px;
+
+  // Variante principal — más legible y destacada
+  &--main {
+    font-size: clamp(18px, 4vw, 28px);  // Responsivo y más grande
+    letter-spacing: 8px;      // Más aireado
+    color: #fff;              // Blanco puro para resaltar
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    position: relative;
+    display: inline-block;
+
+    // El truco: un resplandor que lo haga vibrar
+    text-shadow:
+            0 0 10px rgba($accent, 0.8),
+            0 0 20px rgba($accent, 0.4);
+
+    // Opcional: Agregarle unos corchetes sutiles en los lados
+    &::before { content: '['; margin-right: 10px; opacity: 0.5; color: $accent; }
+    &::after  { content: ']'; margin-left: 10px; opacity: 0.5; color: $accent; }
+  }
 }
 
 .stack {
-  font-size: 9px;        // reducido
-  letter-spacing: 2px;   // reducido
+  font-size: clamp(11px, 2.2vw, 14px);  // más legible pero responsivo
+  letter-spacing: 3px;                   // mejor espaciado
   color: $accent;
-  opacity: .45;          // nivel 3 — tenue
+  opacity: .55;                          // un poco más visible
   text-transform: uppercase;
-  margin-bottom: 28px;
+  margin-bottom: 40px;
+  font-weight: 600;                      // sutilmente más pesado
 }
 
 // ─── Divisor ─────────────────────────────────────────────────────
@@ -267,7 +296,7 @@ $font-mono:    'Share Tech Mono', monospace;
   width: 220px;
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba($accent, .75), transparent);
-  margin-bottom: 28px;
+  margin-bottom: 40px;
 }
 
 // ─── Botón CTA ───────────────────────────────────────────────────
@@ -275,7 +304,7 @@ $font-mono:    'Share Tech Mono', monospace;
   position: relative;
   display: inline-flex;
   align-items: center;
-  border: 1.5px solid rgba($accent, .85); // borde más grueso
+  border: 1.5px solid rgba($accent, .85);
   background: rgba($accent, .08);
   color: #ff6a50;        // color en reposo más vivo
   font-family: $font-mono;
@@ -283,8 +312,7 @@ $font-mono:    'Share Tech Mono', monospace;
   letter-spacing: 4px;
   padding: 13px 32px;
   text-transform: uppercase;
-  cursor: crosshair;
-  margin-bottom: 30px;
+  margin-bottom: 50px;
   pointer-events: auto;
   transition:
           background     .25s,
@@ -306,15 +334,24 @@ $font-mono:    'Share Tech Mono', monospace;
   &::after  { bottom: -3px; right: -3px; border-width: 0 2px 2px 0; }
 
   &:hover:not(:disabled) {
-    background: rgba($accent, .20);
-    color: $accent-glow;
-    border-color: $accent;
-    letter-spacing: 5px;                               // micro expand
-    box-shadow:
-            0 0 20px rgba(232, 96, 76, 0.35),                // glow exterior
-            inset 0 0 12px rgba(232, 96, 76, 0.08);          // glow interior sutil
+    background: rgba(1, 241, 241, 0.12);      // Fondo semi-transparente cyan
+    color: #01f1f1;                           // Texto cyan brillante
+    border-color: #01f1f1;                    // Borde cyan
+    letter-spacing: 5px;
+    transform: scale(1.02);                   // Leve escala
 
-    &::before, &::after { border-color: $accent-glow; }
+    // Glow potenciado con cyan
+    box-shadow:
+      0 0 15px rgba(1, 241, 241, 0.6),
+      0 0 30px rgba(1, 241, 241, 0.3),
+      inset 0 0 15px rgba(1, 241, 241, 0.1),
+      0 0 45px rgba(1, 241, 241, 0.2);
+
+    &::before, &::after {
+      border-color: #01f1f1;                  // Esquinas en cyan
+      box-shadow: 0 0 12px rgba(1, 241, 241, 0.8);
+      animation: pulse-border 1.5s ease-in-out infinite;
+    }
   }
 
   &:disabled { opacity: .5; cursor: not-allowed; }
@@ -330,30 +367,36 @@ $font-mono:    'Share Tech Mono', monospace;
 .social {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 28px;
 
   &__link {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
+    gap: 10px;
     background: none;
     border: none;
     color: rgba($accent, .45);   // tenue
     font-family: $font-mono;
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: 3px;
     text-transform: uppercase;
-    cursor: crosshair;
-    padding: 4px 0;
+    padding: 6px 10px;
     pointer-events: auto;
-    transition: color .2s;
+    transition: all .3s ease;
+    border-bottom: 1px solid transparent;
 
-    &:hover { color: rgba($accent, .85); }
+    &:hover {
+      color: #01f1f1;
+      border-bottom-color: #01f1f1;
+      text-shadow: 0 0 10px rgba(1, 241, 241, 0.6);
+      filter: drop-shadow(0 0 6px rgba(1, 241, 241, 0.5));
+      letter-spacing: 4px;
+    }
   }
 
   &__icon {
-    width: 14px;
-    height: 14px;
+    width: 18px;
+    height: 18px;
     fill: currentColor;
     flex-shrink: 0;
   }
