@@ -91,7 +91,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
     private initScene(): void {
         // Crear la escena
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x1a1a1a);
+        this.scene.background = new THREE.Color(0x000000);
 
         // Crear cámara por defecto (será reemplazada por la cámara del modelo)
         const canvas = this.canvasRef.nativeElement;
