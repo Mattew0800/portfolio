@@ -50,7 +50,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     readonly COCKPIT_ROUTE = '';          // ruta destino (raíz - CockpitViewerComponent)
     readonly TYPEWRITER_DELAY_MS  = 600;          // pausa antes de empezar a tipear
     readonly TYPEWRITER_SPEED_MS  = 90;           // ms por carácter
-    readonly WARP_DURATION_MS     = 1300;         // duración animación warp
+    readonly WARP_DURATION_MS     = 2800;         // duración animación warp (aumentada)
+    readonly WARP_STARS_COUNT     = 800;          // cantidad de estrellas en el warp (aumentada)
     // ─────────────────────────────────────────────────────────────────────────
 
     @ViewChild('bgCanvas',   { static: true }) bgCanvasRef!:   ElementRef<HTMLCanvasElement>;
@@ -250,10 +251,22 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
         const total  = this.WARP_DURATION_MS;
         const start  = performance.now();
 
-        // Spawn de estrellas warp
-        this.warpStars = Array.from({ length: 350 }, () => {
+        // Spawn de estrellas warp — MÁS CANTIDAD para efecto de velocidad
+        this.warpStars = Array.from({ length: this.WARP_STARS_COUNT }, () => {
             const angle = Math.random() * Math.PI * 2;
-            const dist  = Math.random() * Math.min(this.W, this.H) * 0.45 + 10;
+            // Distribución más variada de distancias para crear profundidad
+            const distType = Math.random();
+            let dist: number;
+            if (distType < 0.4) {
+                // 40% muy cercanas (rápidas)
+                dist = Math.random() * Math.min(this.W, this.H) * 0.15 + 5;
+            } else if (distType < 0.7) {
+                // 30% a distancia media
+                dist = Math.random() * Math.min(this.W, this.H) * 0.3 + Math.min(this.W, this.H) * 0.15;
+            } else {
+                // 30% lejanas (lentas)
+                dist = Math.random() * Math.min(this.W, this.H) * 0.35 + Math.min(this.W, this.H) * 0.45;
+            }
             return {
                 x: cx + Math.cos(angle) * dist,
                 y: cy + Math.sin(angle) * dist,
@@ -265,27 +278,42 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
         const warpFrame = (now: number) => {
             const elapsed = now - start;
             const prog    = Math.min(elapsed / total, 1);
-            const eased   = prog * prog;                       // ease-in
 
-            // Fondo fade-in progresivo
-            wCtx.fillStyle = `rgba(10,2,4,${0.1 + eased * 0.85})`;
+            // Easing más dramático para acelerar más al inicio
+            const eased   = Math.pow(prog, 1.3);  // poder aumentado para aceleración más rápida
+
+            // Fondo fade-in más oscuro y dramático
+            wCtx.fillStyle = `rgba(10,2,4,${0.05 + eased * 0.9})`;
             wCtx.fillRect(0, 0, this.W, this.H);
 
-            // Estrellas que se convierten en líneas
-            const speed  = eased * 60 + 0.5;
-            const trailK = eased * 14 + 1;
+            // Estrellas que se convierten en líneas — VELOCIDAD MÁS DRAMÁTICA
+            const speed  = eased * 120 + 1;          // velocidad base más alta
+            const trailK = eased * 28 + 2;           // trails más largos
 
             this.warpStars.forEach(s => {
-                const currentDist = s.dist + speed * elapsed * 0.05;
+                // Variación en velocidad según la profundidad
+                const depthFactor = s.dist / (Math.min(this.W, this.H) * 0.5);
+                const depthSpeed = 0.5 + (1 - Math.min(depthFactor, 1)) * 1.5;
+
+                const currentDist = s.dist + speed * elapsed * 0.08 * depthSpeed;
                 const nx  = cx + Math.cos(s.angle) * currentDist;
                 const ny  = cy + Math.sin(s.angle) * currentDist;
-                const trailLen = speed * trailK;
+                const trailLen = speed * trailK * depthSpeed;
                 const x0  = nx - Math.cos(s.angle) * trailLen;
                 const y0  = ny - Math.sin(s.angle) * trailLen;
 
-                const alpha = Math.min(0.3 + eased * 0.7, 1);
-                wCtx.strokeStyle = `rgba(255,${Math.floor(150 - eased * 100)},${Math.floor(80 - eased * 60)},${alpha})`;
-                wCtx.lineWidth   = 0.5 + eased * 2;
+                // Alpha más variable según progreso
+                const alpha = Math.min(0.2 + eased * 0.8, 1);
+
+                // Color más vibrante: cyan (#01f1f1) al final, naranja al inicio
+                const colorProgress = eased;
+                const r = Math.floor(255 - colorProgress * 254);
+                const g = Math.floor(150 + colorProgress * 105);
+                const b = Math.floor(80 + colorProgress * 171);
+
+                wCtx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
+                wCtx.lineWidth   = 0.3 + eased * 3;
+                wCtx.lineCap     = 'round';
                 wCtx.beginPath();
                 wCtx.moveTo(x0, y0);
                 wCtx.lineTo(nx, ny);
@@ -298,12 +326,17 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
                 // Flash negro al final
                 wCtx.fillStyle = 'rgba(0,0,0,1)';
                 wCtx.fillRect(0, 0, this.W, this.H);
-                setTimeout(() => this.router.navigate([this.COCKPIT_ROUTE]), 50);
+
+                setTimeout(() => {
+                    // Navegar al cockpit
+                    this.router.navigate([this.COCKPIT_ROUTE]);
+                }, 100);
             }
         };
 
         this.warpFrameId = requestAnimationFrame(warpFrame);
     }
+
 
     openLink(url: string): void {
         window.open(url, '_blank', 'noopener,noreferrer');

@@ -20,6 +20,16 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
     @ViewChild('canvas', { static: true })
     private canvasRef! : ElementRef<HTMLCanvasElement>;
 
+    // Flag público para controlar el overlay de carga
+    modelLoaded = false;
+
+    // Contadores para tracking de carga
+    private videosLoaded = 0;
+    private videosRequired = 0;
+    private texturesRendered = 0;
+    private firstFrameRendered = false;
+    private firstFrameTime: number | null = null;
+
     private renderer! : THREE.WebGLRenderer;
     private scene!: THREE.Scene;
     private camera!: THREE.PerspectiveCamera;
@@ -255,6 +265,8 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             if (component) {
                 // Crear canvas y textura para esta pantalla usando el componente Angular
                 this.createScreenTextureFromComponent(mesh, component);
+                this.texturesRendered++;
+                console.log(`✅ Pantalla ${mesh.name} renderizada (${this.texturesRendered}/${this.screenMeshes.length})`);
 
                 // Si es la pantalla principal, crear planos interactivos para los LI
                 if (mesh.name === 'Plane_3') {
@@ -268,6 +280,32 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         });
 
         console.log('✅ Contenido de pantallas configurado');
+
+        // Verificar si todo está listo
+        this.checkIfFullyLoaded();
+    }
+
+    private checkIfFullyLoaded(): void {
+        console.log(`⏳ Verificando estado de carga...`);
+        console.log(`   Videos: ${this.videosLoaded}/${this.videosRequired}`);
+        console.log(`   Texturas: ${this.texturesRendered}/${this.screenMeshes.length}`);
+        console.log(`   Primer frame: ${this.firstFrameRendered}`);
+
+        // Esperar a que todo esté listo
+        const checkReady = () => {
+            if (
+                this.videosLoaded >= this.videosRequired &&
+                this.texturesRendered >= this.screenMeshes.length &&
+                this.firstFrameRendered
+            ) {
+                console.log('✅ ¡COCKPIT COMPLETAMENTE CARGADO!');
+                this.modelLoaded = true;
+            } else {
+                setTimeout(checkReady, 200);
+            }
+        };
+
+        setTimeout(checkReady, 500);
     }
 
     private getProjectsContent(): string {
@@ -1713,6 +1751,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                             // Aplicar video directamente
                             const videoUrl = '/assets/space.mp4';
                             console.log(`   🎬 Aplicando video: ${videoUrl}`);
+                            this.videosRequired++;  // Contar video requerido
                             this.replaceTextureWithVideo(material, propName, videoUrl, child.name);
                         }
                     });
@@ -1720,7 +1759,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             }
         });
 
-        console.log('🎥 Configuración de video completada');
+        console.log(`🎥 Configuración de video completada. Videos requeridos: ${this.videosRequired}`);
     }
 
     private _getVideoUrlFromImage(imageUrl: string): string | null {
@@ -1767,6 +1806,9 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         video.addEventListener('loadeddata', () => {
             console.log(`   ✅ ¡Video cargado exitosamente!`);
             console.log(`   ℹ️  Duración: ${video.duration.toFixed(2)}s, Tamaño: ${video.videoWidth}x${video.videoHeight}`);
+
+            this.videosLoaded++;  // Incrementar contador de videos cargados
+            console.log(`   📊 Videos cargados: ${this.videosLoaded}/${this.videosRequired}`);
 
             video.play().then(() => {
                 console.log(`   ▶️ ¡VIDEO REPRODUCIÉNDOSE EN "${meshName}"!`);
@@ -1880,6 +1922,21 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
     private animate(): void {
         this.animationId = requestAnimationFrame(() => this.animate());
         this.updateCameraAnimation(); // Actualizar animación de cámara
+
+        // Registrar el tiempo del primer frame pero no marcar como renderizado todavía
+        if (!this.firstFrameTime) {
+            this.firstFrameTime = performance.now();
+            console.log('🎬 Primer frame detectado, esperando 1.5s para optimización de Three.js...');
+        }
+
+        // Marcar como renderizado 1.5s después del primer frame
+        if (this.firstFrameTime && !this.firstFrameRendered) {
+            const timeSinceFirstFrame = performance.now() - this.firstFrameTime;
+            if (timeSinceFirstFrame > 1500) {
+                this.firstFrameRendered = true;
+                console.log('✅ Renderizado completamente optimizado (1.5s después del primer frame)');
+            }
+        }
 
         // Actualizar texturas de canvas en cada frame
         this.screenTextures.forEach((texture) => {

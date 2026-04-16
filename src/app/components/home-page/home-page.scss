@@ -98,6 +98,8 @@ $font-mono:    'Share Tech Mono', monospace;
   height: 100%;
   display: block;
   pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.5s ease-out;
 
   &--bg   { z-index: 0; }
   &--warp { z-index: 40; }
