@@ -1,23 +1,24 @@
+// Sin cambios en lógica — solo se agrega el handler de teclado en el template (keydown.enter).
+// El resto del componente permanece idéntico.
 import {
     Component,
     OnInit,
     OnDestroy,
     HostListener,
 } from '@angular/core';
-import {LowerCasePipe} from "@angular/common";
-
+import { LowerCasePipe } from '@angular/common';
 
 export interface Project {
-    id:          string;        // '01', '02', etc.
-    codename:    string;        // nombre en mayúsculas estilo sistema
-    title:       string;        // nombre legible
+    id:          string;
+    codename:    string;
+    title:       string;
     status:      'ONLINE' | 'ACTIVE' | 'ARCHIVED';
     role:        string;
     date:        string;
     description: string;
     longDesc:    string;
     stack:       string[];
-    image:       string;        // ruta del screenshot
+    image:       string;
     github:      string | null;
     demo:        string | null;
 }
@@ -26,14 +27,10 @@ export interface Project {
     selector: 'app-projects',
     templateUrl: './projects-modal.html',
     styleUrls: ['./projects-modal.scss'],
-    imports: [
-        LowerCasePipe,
-        LowerCasePipe
-    ]
+    imports: [LowerCasePipe],
 })
 export class ProjectsComponent implements OnInit, OnDestroy {
 
-    // ─── DATOS — reemplazá con tus proyectos reales ──────────────────────────
     readonly projects: Project[] = [
         {
             id: '01',
@@ -92,19 +89,14 @@ export class ProjectsComponent implements OnInit, OnDestroy {
             demo: null,
         },
     ];
-    // ─────────────────────────────────────────────────────────────────────────
 
     selectedProject: Project | null = null;
     isDetailOpen    = false;
     isClosing       = false;
     hoveredId: string | null = null;
 
-    private scanlineEl: HTMLElement | null = null;
-
     ngOnInit(): void {}
     ngOnDestroy(): void {}
-
-    // ─── DETALLE ─────────────────────────────────────────────────────────────
 
     openDetail(project: Project): void {
         this.selectedProject = project;
@@ -126,13 +118,9 @@ export class ProjectsComponent implements OnInit, OnDestroy {
         if (this.isDetailOpen) this.closeDetail();
     }
 
-    // ─── STATUS LABEL ────────────────────────────────────────────────────────
-
     statusLabel(s: Project['status']): string {
         return { ONLINE: '● ONLINE', ACTIVE: '● ACTIVE', ARCHIVED: '○ ARCHIVED' }[s];
     }
-
-    // ─── LINKS ───────────────────────────────────────────────────────────────
 
     openLink(url: string): void {
         window.open(url, '_blank', 'noopener,noreferrer');

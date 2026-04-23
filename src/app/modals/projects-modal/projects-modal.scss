@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────
-// TOKENS — misma identidad que home-page
+// TOKENS
 // ─────────────────────────────────────────────────────────────────
 $bg:           #0a0204;
 $accent:       #e8604c;
@@ -9,7 +9,7 @@ $cyan-dim:     rgba(1, 241, 241, 0.65);
 $green:        #39ff8a;
 $green-dim:    rgba(57, 255, 138, 0.7);
 $amber:        #f5a623;
-$surface:      rgba(232, 96, 76, 0.04);
+$surface:      rgba(232, 96, 76, 0.05);
 $border:       rgba(232, 96, 76, 0.18);
 $text-hud:     rgba(232, 96, 76, 0.75);
 
@@ -28,8 +28,8 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 @keyframes pulse-border {
-  0%, 100% { opacity: .35; }
-  50%       { opacity: .8;  }
+  0%, 100% { opacity: .30; }
+  50%       { opacity: .65; }
 }
 
 @keyframes scan {
@@ -49,11 +49,6 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
 @keyframes backdrop-in  { from { opacity: 0; } to { opacity: 1; } }
 @keyframes backdrop-out { from { opacity: 1; } to { opacity: 0; } }
-
-@keyframes entry-slide {
-  from { opacity: 0; transform: translateX(-12px); }
-  to   { opacity: 1; transform: translateX(0);     }
-}
 
 @keyframes blink {
   0%, 100% { opacity: 1; }
@@ -78,24 +73,23 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   background: $bg;
   display: flex;
   flex-direction: column;
-  padding: 48px 64px 64px;
+  padding: 80px 100px 100px;
   font-family: $font-mono;
   cursor: crosshair;
   overflow-x: hidden;
 
-  // Punto focal coherente con home
   &::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse 70% 50% at 50% 20%, rgba(180, 40, 15, 0.12) 0%, transparent 65%);
+    background: radial-gradient(ellipse 70% 50% at 50% 20%, rgba(180, 40, 15, 0.10) 0%, transparent 65%);
     pointer-events: none;
     z-index: 0;
   }
 }
 
 // ─────────────────────────────────────────────────────────────────
-// HUD
+// HUD — reducido para no competir con contenido
 // ─────────────────────────────────────────────────────────────────
 .hud {
   position: fixed;
@@ -106,23 +100,23 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
 .hud__corner {
   position: absolute;
-  width: 24px;
-  height: 24px;
-  border-color: $accent;
+  width: 20px;
+  height: 20px;
+  border-color: rgba($accent, .55);   // ← antes: $accent sin alpha
   border-style: solid;
-  animation: pulse-border 3.5s ease-in-out infinite;
+  animation: pulse-border 4s ease-in-out infinite;
 
-  &--tl { top: 14px; left: 14px;   border-width: 2px 0 0 2px; }
-  &--tr { top: 14px; right: 14px;  border-width: 2px 2px 0 0; }
-  &--bl { bottom: 14px; left: 14px;  border-width: 0 0 2px 2px; animation-delay: .3s; }
-  &--br { bottom: 14px; right: 14px; border-width: 0 2px 2px 0; animation-delay: .6s; }
+  &--tl { top: 14px; left: 14px;     border-width: 1.5px 0 0 1.5px; }
+  &--tr { top: 14px; right: 14px;    border-width: 1.5px 1.5px 0 0; }
+  &--bl { bottom: 14px; left: 14px;  border-width: 0 0 1.5px 1.5px; animation-delay: .3s; }
+  &--br { bottom: 14px; right: 14px; border-width: 0 1.5px 1.5px 0; animation-delay: .6s; }
 }
 
 .hud__line {
   position: absolute;
   left: 0; right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgba($accent, .10) 20%, rgba($accent, .10) 80%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba($accent, .07) 20%, rgba($accent, .07) 80%, transparent 100%);
 
   &--top    { top: 10%;    }
   &--bottom { bottom: 10%; }
@@ -132,8 +126,8 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   position: absolute;
   top: 0; left: 0;
   width: 100%; height: 2px;
-  background: rgba($accent, .05);
-  animation: scan 8s linear infinite;
+  background: rgba($accent, .04);    // ← antes: .05, más sutil
+  animation: scan 10s linear infinite;
   animation-delay: 1s;
 }
 
@@ -146,7 +140,7 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-bottom: 48px;
+  margin-bottom: 40px;
   padding-bottom: 16px;
   border-bottom: 1px solid $border;
 }
@@ -157,10 +151,11 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   gap: 6px;
 }
 
+// ↑ 9px → 10px: legible sin romper el tono
 .section-tag {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 4px;
-  color: rgba($accent, .85);
+  color: rgba($accent, .88);
   text-transform: uppercase;
 }
 
@@ -171,7 +166,7 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   color: #fff;
   letter-spacing: 8px;
   text-transform: uppercase;
-  text-shadow: 0 0 30px rgba(232, 96, 76, 0.35);
+  text-shadow: 0 0 28px rgba(232, 96, 76, 0.30);
   margin: 0;
 }
 
@@ -182,8 +177,9 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   gap: 4px;
 }
 
+// ↑ 9px → 10px
 .header-meta {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 3px;
   color: $text-hud;
   text-transform: uppercase;
@@ -197,17 +193,17 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;  // ← antes: 2px — más respiro entre filas
 }
 
-// ─── Entry (fila de proyecto) ─────────────────────────────────────
+// ─── Entry ───────────────────────────────────────────────────────
 .entry {
   position: relative;
   display: grid;
   grid-template-columns: 52px 1fr auto auto 120px;
   align-items: center;
   gap: 20px;
-  padding: 18px 20px;
+  padding: 32px 24px;
   border: 1px solid transparent;
   background: transparent;
   cursor: crosshair;
@@ -215,8 +211,9 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
           background .25s $ease-in-out,
           border-color .25s $ease-in-out;
   overflow: hidden;
+  outline: none;              // manejado por focus-visible
 
-  // Línea izquierda — aparece en hover
+  // Línea izquierda
   &::before {
     content: '';
     position: absolute;
@@ -228,6 +225,12 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
     transition: transform .3s $ease-out-expo;
   }
 
+  // Focus accesible
+  &:focus-visible {
+    border-color: rgba($accent, .50);
+    box-shadow: inset 0 0 0 1px rgba($accent, .25);
+  }
+
   &:hover,
   &--hovered {
     background: $surface;
@@ -235,13 +238,13 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
     &::before { transform: scaleY(1); }
 
-    .entry__codename { color: #fff; letter-spacing: 4px; }
-    .entry__cta      { opacity: 1; color: $cyan; letter-spacing: 3px; }
-    .entry__id       { color: rgba($accent, .9); }
+    // Solo cambio de color, SIN animar letter-spacing → no layout shift
+    .entry__codename { color: #fff; }
+    .entry__cta      { opacity: 1; color: $accent; }
+    .entry__id       { color: rgba($accent, .95); }
     .entry__track    { transform: scaleX(1); }
   }
 
-  // Track decorativo de fondo
   &__track {
     position: absolute;
     bottom: 0; left: 0; right: 0;
@@ -255,9 +258,9 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
 .entry__id {
   font-family: $font-display;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
-  color: rgba($accent, .75);
+  color: rgba($accent, .82);
   letter-spacing: 2px;
   white-space: nowrap;
   transition: color .25s;
@@ -267,56 +270,61 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 .entry__name-block {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   min-width: 0;
 }
 
+// ↑ 13px → 17px, .85 → .92 — más presencia
 .entry__codename {
   font-family: $font-display;
-  font-size: 13px;
+  font-size: 17px;
   font-weight: 700;
-  color: rgba(#fff, .85);
-  letter-spacing: 3px;
+  color: rgba(#fff, .95);
+  letter-spacing: 3px;        // fijo — no animar en hover
   text-transform: uppercase;
-  transition: color .25s $ease-in-out, letter-spacing .3s $ease-out-expo;
+  transition: color .25s $ease-in-out;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+// ↑ 9px → 12px, .70 → .82
 .entry__title {
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: 2px;
-  color: rgba($accent, .70);
+  color: rgba($accent, .82);
   text-transform: uppercase;
 }
 
 .entry__stack {
   list-style: none;
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: nowrap;
   margin: 0;
   padding: 0;
 }
 
+// Chips sin borde — fondo sutil. Menos ruido, misma info
 .entry__tech {
-  font-size: 8px;
-  letter-spacing: 2px;
-  color: rgba($accent, .85);
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: rgba($accent, .88);
   text-transform: uppercase;
-  border: 1px solid rgba($accent, .45);
-  padding: 2px 7px;
+  background: rgba($accent, .08);   // ← antes: border + color saturado
+  padding: 4px 10px;
   white-space: nowrap;
+  font-weight: 600;
+  transition: background .2s;
 
   &--more {
-    color: rgba($accent, .60);
-    border-color: rgba($accent, .30);
+    color: rgba($accent, .65);
+    background: rgba($accent, .05);
   }
 }
 
 .entry__status {
-  font-size: 9px;
+  font-size: 11px;              // ← antes: 10px
   letter-spacing: 2px;
   text-transform: uppercase;
   white-space: nowrap;
@@ -327,15 +335,17 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   &--archived { color: rgba($accent, .60); }
 }
 
+// CTA oculto por defecto → emerge solo en hover
 .entry__cta {
-  font-size: 10px;
+  font-size: 13px;
   letter-spacing: 2px;
-  color: rgba($accent, .70);
+  color: rgba($accent, .90);
   text-transform: uppercase;
   white-space: nowrap;
   text-align: right;
-  opacity: .8;
-  transition: opacity .25s, color .25s $ease-in-out, letter-spacing .3s $ease-out-expo;
+  opacity: 0;                   // ← antes: 1 siempre visible → ruido
+  font-weight: 600;
+  transition: opacity .2s $ease-in-out, color .2s $ease-in-out;
   user-select: none;
 }
 
@@ -345,7 +355,7 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 .detail-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.72);
+  background: rgba(0, 0, 0, 0.76);
   z-index: 100;
   display: flex;
   align-items: center;
@@ -364,20 +374,20 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   width: min(720px, 90vw);
   max-height: calc(100dvh - 48px);
   background: #0d0304;
-  border: 1px solid rgba($accent, .35);
+  border: 1px solid rgba($accent, .30);
   overflow-y: auto;
   animation: panel-in .4s $ease-out-expo forwards;
   cursor: default;
 
   scrollbar-width: thin;
-  scrollbar-color: rgba($accent, .25) transparent;
+  scrollbar-color: rgba($accent, .20) transparent;
 
   &--closing {
     animation: panel-out .38s $ease-out-expo forwards;
   }
 }
 
-// HUD del panel
+// HUD del panel — más discreto
 .panel-hud {
   position: sticky;
   top: 0;
@@ -387,16 +397,15 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
 .panel-hud__corner {
   position: absolute;
-  width: 14px;
-  height: 14px;
-  border-color: $accent;
+  width: 12px;
+  height: 12px;
+  border-color: rgba($accent, .45);  // ← antes: $accent al 60%
   border-style: solid;
-  opacity: .6;
 
-  &--tl { top: 8px;  left: 8px;  border-width: 1.5px 0 0 1.5px; }
-  &--tr { top: 8px;  right: 8px; border-width: 1.5px 1.5px 0 0; }
-  &--bl { bottom: 8px; left: 8px;  border-width: 0 0 1.5px 1.5px; }
-  &--br { bottom: 8px; right: 8px; border-width: 0 1.5px 1.5px 0; }
+  &--tl { top: 8px;    left: 8px;   border-width: 1px 0 0 1px; }
+  &--tr { top: 8px;    right: 8px;  border-width: 1px 1px 0 0; }
+  &--bl { bottom: 8px; left: 8px;   border-width: 0 0 1px 1px; }
+  &--br { bottom: 8px; right: 8px;  border-width: 0 1px 1px 0; }
 }
 
 // Header del panel
@@ -413,14 +422,14 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .panel__id {
-  font-size: 9px;
+  font-size: 10px;              // ← antes: 9px
   letter-spacing: 4px;
-  color: rgba($accent, .80);
+  color: rgba($accent, .82);
   text-transform: uppercase;
 }
 
 .panel__status {
-  font-size: 9px;
+  font-size: 10px;              // ← antes: 9px
   letter-spacing: 2px;
   text-transform: uppercase;
   margin-left: auto;
@@ -428,22 +437,25 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
   &--online   { color: #4eff9e; }
   &--active   { color: #00ffff; }
-  &--archived { color: rgba($accent, .50); }
+  &--archived { color: rgba($accent, .55); }
 }
 
 .panel__close {
   background: none;
-  border: 1px solid rgba($accent, .65);
+  border: 1px solid rgba($accent, .50);
   color: rgba($accent, .85);
   font-family: $font-mono;
-  font-size: 9px;
+  font-size: 10px;              // ← antes: 9px
   letter-spacing: 2px;
-  padding: 5px 10px;
+  padding: 6px 12px;
+  min-height: 32px;             // ← target táctil mínimo
   cursor: crosshair;
   text-transform: uppercase;
-  transition: color .2s, border-color .2s;
+  transition: color .2s, border-color .2s, background .2s;
+  outline: none;
 
-  &:hover { color: $accent; border-color: $accent; }
+  &:hover          { color: $accent; border-color: $accent; background: rgba($accent, .06); }
+  &:focus-visible  { outline: 1px solid rgba($accent, .70); outline-offset: 2px; }
 }
 
 .panel__codename {
@@ -453,14 +465,14 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   color: #fff;
   letter-spacing: 5px;
   text-transform: uppercase;
-  text-shadow: 0 0 24px rgba(232, 96, 76, 0.40);
+  text-shadow: 0 0 22px rgba(232, 96, 76, 0.32);
   margin: 0 0 6px;
 }
 
 .panel__title {
   font-size: 10px;
   letter-spacing: 3px;
-  color: rgba($accent, .75);
+  color: rgba($accent, .78);
   text-transform: uppercase;
   margin: 0;
 }
@@ -472,7 +484,6 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   gap: 0;
 }
 
-// Imagen
 .panel__image-wrap {
   position: relative;
   width: 100%;
@@ -487,7 +498,7 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   height: 100%;
   object-fit: cover;
   display: block;
-  filter: saturate(.85) brightness(.9);
+  filter: saturate(.85) brightness(.88);
   transition: filter .3s;
 
   &:hover { filter: saturate(1) brightness(1); }
@@ -501,11 +512,10 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   justify-content: center;
   font-size: 11px;
   letter-spacing: 4px;
-  color: rgba($accent, .60);
+  color: rgba($accent, .55);
   text-transform: uppercase;
 }
 
-// Info
 .panel__info {
   padding: 28px 32px 32px;
   display: flex;
@@ -530,29 +540,32 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   gap: 32px;
 }
 
+// ↑ 9px → 10px, .80 → .92 — legible como label
 .panel__label {
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 4px;
-  color: rgba($accent, .80);
+  color: rgba($accent, .92);
   text-transform: uppercase;
   white-space: nowrap;
 }
 
+// ↑ 12px → 13px, .75 → .88 — lectura cómoda
 .panel__desc {
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.8;
-  color: rgba(#fff, .75);
-  letter-spacing: .5px;
+  color: rgba(#fff, .88);
+  letter-spacing: .4px;
   margin: 0;
 }
 
 .panel__meta-value {
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 3px;
-  color: rgba(#fff, .85);
+  color: rgba(#fff, .88);
   text-transform: uppercase;
 }
 
+// Chips de panel — borde sutil en cyan, más legibles
 .panel__stack-list {
   list-style: none;
   display: flex;
@@ -563,18 +576,18 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .panel__tech {
-  font-size: 9px;
-  letter-spacing: 2px;
-  color: #00ffff;
-  border: 1px solid rgba(0, 255, 255, .40);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: $cyan;
+  border: 1px solid rgba($cyan, .30);  // ← antes: .40
+  background: rgba($cyan, .04);        // ← añadido: fondo sutil
   padding: 4px 12px;
   text-transform: uppercase;
-  transition: background .2s, color .2s;
+  transition: background .2s, border-color .2s;
 
   &:hover {
-    background: rgba(0, 255, 255, .10);
-    color: #00ffff;
-    border-color: rgba(0, 255, 255, .60);
+    background: rgba($cyan, .10);
+    border-color: rgba($cyan, .55);
   }
 }
 
@@ -596,6 +609,8 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   text-transform: uppercase;
   cursor: crosshair;
   padding: 10px 20px;
+  min-height: 40px;             // ← target táctil
+  outline: none;
   transition:
           background .25s $ease-in-out,
           color .25s $ease-in-out,
@@ -604,32 +619,34 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
   svg { width: 14px; height: 14px; fill: currentColor; flex-shrink: 0; }
 
+  &:focus-visible { outline: 1px solid rgba($accent, .65); outline-offset: 2px; }
+
   &--github {
-    border: 1.5px solid rgba($accent, .6);
+    border: 1.5px solid rgba($accent, .55);
     color: $accent;
 
     &:hover {
-      background: rgba($accent, .12);
+      background: rgba($accent, .10);
       border-color: $accent;
-      box-shadow: 0 0 16px rgba(232, 96, 76, 0.25);
+      box-shadow: 0 0 14px rgba(232, 96, 76, 0.22);
     }
   }
 
   &--demo {
-    border: 1.5px solid rgba($cyan, .5);
+    border: 1.5px solid rgba($cyan, .45);
     color: $cyan-dim;
 
     &:hover {
-      background: rgba($cyan, .08);
+      background: rgba($cyan, .07);
       border-color: $cyan;
       color: $cyan;
-      box-shadow: 0 0 16px rgba(1, 241, 241, 0.2);
+      box-shadow: 0 0 14px rgba(1, 241, 241, 0.18);
     }
   }
 }
 
 .panel__no-links {
-  font-size: 9px;
+  font-size: 10px;              // ← antes: 9px
   letter-spacing: 3px;
   color: rgba($accent, .50);
   text-transform: uppercase;
