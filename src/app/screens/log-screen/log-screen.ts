@@ -101,5 +101,5 @@ export class LogScreen implements OnInit, OnDestroy {
     goBack(): void {
         this.router.navigate(['/']);
     }
-
 }
+

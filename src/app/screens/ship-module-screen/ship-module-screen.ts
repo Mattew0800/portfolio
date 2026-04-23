@@ -28,7 +28,6 @@ export class ShipModuleScreen implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    // Asegurar que el SVG esté disponible después de que la vista se inicialice
     const currentVisitedModules = this.moduleStateService.getVisitedModules();
     this.updateModuleVisibility(currentVisitedModules);
   }
@@ -40,7 +39,6 @@ export class ShipModuleScreen implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private updateModuleVisibility(visitedModules: Set<number>): void {
-    // Si el SVG aún no está disponible, reintentar después de un pequeño delay
     if (!this.svgElement) {
       console.warn('SVG no está disponible, reintentando...');
       setTimeout(() => {
@@ -53,21 +51,18 @@ export class ShipModuleScreen implements OnInit, AfterViewInit, OnDestroy {
 
     console.log(`Actualizando módulos: módulos visitados = ${Array.from(visitedModules).join(', ') || 'ninguno'}`);
 
-    const RED_COLOR = '#71040B';    // Color rojo por defecto
-    const GREEN_COLOR = '#047109';  // Color verde cuando se visita
-    const OPACITY = '0.6';          // Opacidad siempre 60%
+    const RED_COLOR = '#71040B';
+    const GREEN_COLOR = '#047109';
+    const OPACITY = '0.6';
 
-    // Actualizar color de todos los módulos
     for (let i = 1; i <= 5; i++) {
       const modulePath = svg.getElementById(`MODULO ${i}`) as SVGPathElement;
       if (modulePath) {
         if (visitedModules.has(i)) {
-          // Módulo visitado: cambia a verde y PERMANECE verde
           modulePath.setAttribute('fill', GREEN_COLOR);
           modulePath.setAttribute('fill-opacity', OPACITY);
           console.log(`✅ Módulo ${i} - VERDE (visitado)`);
         } else {
-          // Módulos no visitados: rojo por defecto
           modulePath.setAttribute('fill', RED_COLOR);
           modulePath.setAttribute('fill-opacity', OPACITY);
           console.log(`🔴 Módulo ${i} - ROJO (no visitado)`);
@@ -77,8 +72,5 @@ export class ShipModuleScreen implements OnInit, AfterViewInit, OnDestroy {
       }
     }
   }
-
-  goBack(): void {
-    this.router.navigate(['/']);
-  }
 }
+

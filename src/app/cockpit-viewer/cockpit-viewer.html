@@ -1,10 +1,16 @@
 <div class="viewer-container">
   <canvas #canvas></canvas>
   <div class="loading-overlay" [class.loaded]="modelLoaded">
-    <div class="loading-spinner">
-      <div class="spinner"></div>
-      <p>Cargando cockpit...</p>
-    </div>
+  </div>
+
+  <!-- Modales superpuestos al cockpit -->
+  <div class="modal-layer">
+    <app-projects *ngIf="activeModal === 'projects'"></app-projects>
+    <app-skills-modal *ngIf="activeModal === 'skills'"></app-skills-modal>
+    <app-about-modal *ngIf="activeModal === 'about'"></app-about-modal>
+    <app-contact-modal *ngIf="activeModal === 'contact'"></app-contact-modal>
+    <app-ship-module-modal *ngIf="activeModal === 'ship-modules'"></app-ship-module-modal>
+    <app-log-modal *ngIf="activeModal === 'logs'"></app-log-modal>
   </div>
 </div>
 

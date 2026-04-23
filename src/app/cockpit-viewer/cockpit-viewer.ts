@@ -1,4 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild, OnDestroy, ApplicationRef, createComponent, EnvironmentInjector, Type } from '@angular/core';
+import { CommonModule, UpperCasePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -7,11 +8,26 @@ import html2canvas from 'html2canvas';
 import { LogScreen } from '../screens/log-screen/log-screen';
 import { MainScreen } from '../screens/main-screen/main-screen';
 import { ShipModuleScreen } from '../screens/ship-module-screen/ship-module-screen';
+import { ModalService } from '../services/modal.service';
+import { SkillsModalComponent } from '../modals/skills-modal/skills-modal';
+import { ShipModuleModalComponent } from '../modals/ship-module-modal/ship-module-modal';
+import { LogModalComponent } from '../modals/log-modal/log-modal';
+import { ProjectsComponent } from '../modals/projects-modal/projects-modal';
+import {AboutComponent} from "../modals/about-modal/about-modal";
+import {ContactComponent} from "../modals/contact-modal/contact-modal";
 
 @Component({
     selector: 'app-cockpit-viewer',
     standalone: true,
-    imports: [],
+    imports: [
+        CommonModule,
+        ProjectsComponent,
+        SkillsModalComponent,
+        ContactComponent,
+        ShipModuleModalComponent,
+        LogModalComponent,
+        AboutComponent,
+    ],
     templateUrl: './cockpit-viewer.html',
     styleUrl: './cockpit-viewer.scss',
 })
@@ -22,6 +38,9 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
 
     // Flag público para controlar el overlay de carga
     modelLoaded = false;
+
+    // Modal control
+    activeModal: string | null = null;
 
     // Contadores para tracking de carga
     private videosLoaded = 0;
@@ -49,18 +68,6 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
     private targetControlsTarget: THREE.Vector3 = new THREE.Vector3();
     private screenCanvases: Map<string, HTMLCanvasElement> = new Map();
     private screenTextures: Map<string, THREE.CanvasTexture> = new Map();
-    private screenRoutes: Map<string, string> = new Map([
-        ['Plane_1', '/ship-modules'],
-        ['Plane_2', '/logs'],
-        ['Plane_3', '/main']
-    ]);
-    private liRoutes: Record<string, string> = {
-        home: '/home',
-        projects: '/projects',
-        skills: '/skills',
-        about: '/about',
-        contact: '/contact'
-    };
     private interactivePlanes: THREE.Mesh[] = [];
     private hoveredPlane: THREE.Mesh | null = null;
     private hoverTextures: Map<number, THREE.CanvasTexture> = new Map(); // Cache de texturas pre-renderizadas
@@ -69,8 +76,14 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
     constructor(
         private appRef: ApplicationRef,
         private injector: EnvironmentInjector,
+        private modalService: ModalService,
         private router: Router
-    ) {}
+    ) {
+        // Suscribirse a cambios del modal
+        this.modalService.activeModal$.subscribe(modal => {
+            this.activeModal = modal;
+        });
+    }
 
     ngOnInit(): void {
         this.initScene();
@@ -1290,18 +1303,41 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         console.log('   🎯 Ray origin:', this.raycaster.ray.origin);
         console.log('   ➡️ Ray direction:', this.raycaster.ray.direction);
         console.log('   🖥️ Pantallas disponibles:', this.screenMeshes.length);
+        console.log('   🎯 Planos interactivos disponibles:', this.interactivePlanes.length);
 
         // Click sobre planos interactivos (LIs)
         const planeIntersects = this.raycaster.intersectObjects(this.interactivePlanes, false);
+        console.log('   ✨ Intersecciones con planos interactivos:', planeIntersects.length);
+
         if (planeIntersects.length > 0) {
             const clickedPlane = planeIntersects[0].object as THREE.Mesh;
             const label = clickedPlane.userData['label'];
-            const route = label ? this.liRoutes[label] : undefined;
-            if (route) {
-                console.log(`   🚀 Navegando por LI "${label}" a:`, route);
-                this.router.navigate([route]);
+
+            console.log(`   🎯 Plano interactivo clickeado: ${clickedPlane.name}, label: "${label}"`);
+
+            // Si es home, navegar a /home
+            if (label === 'home') {
+                console.log(`   🏠 Navegando a /home`);
+                this.router.navigate(['']);
+                return;
+            }
+
+            // Mapear labels a nombres de modales
+            const modalMap: Record<string, string> = {
+                projects: 'projects',
+                skills: 'skills',
+                about: 'about',
+                contact: 'contact'
+            };
+
+            const modalName = label ? modalMap[label] : undefined;
+            console.log(`   📂 Label: "${label}", Modal Name: "${modalName}"`);
+
+            if (modalName) {
+                console.log(`   📂 Abriendo modal "${modalName}" para LI "${label}"`);
+                this.modalService.openModal(modalName);
             } else {
-                console.warn(`   ⚠️ No hay ruta configurada para LI "${label}". Actualiza liRoutes.`);
+                console.warn(`   ⚠️ No hay modal configurado para LI "${label}". Actualiza modalMap.`);
             }
             return; // No seguimos probando pantallas
         }
@@ -1325,13 +1361,19 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             const clickedScreen = screenIntersects[0].object as THREE.Mesh;
             console.log('   🎯 ¡PANTALLA DETECTADA!:', clickedScreen.name);
 
-            // Obtener la ruta correspondiente
-            const route = this.screenRoutes.get(clickedScreen.name);
-            if (route && route!=='/main') {
-                console.log('   🚀 Navegando a:', route);
-                this.router.navigate([route]);
+            // Mapear nombres de pantallas a modales
+            const screenModalMap: Record<string, string> = {
+                'Plane_1': 'ship-modules',  // Ship Module Screen
+                'Plane_2': 'logs',          // Log Screen
+                'Plane_3': 'skills'         // Main Screen → Skills
+            };
+
+            const modalName = screenModalMap[clickedScreen.name];
+            if (modalName) {
+                console.log(`   📂 Abriendo modal "${modalName}" para pantalla "${clickedScreen.name}"`);
+                this.modalService.openModal(modalName);
             } else {
-                console.warn('   ⚠️ No se encontró ruta para la pantalla:', clickedScreen.name);
+                console.warn('   ⚠️ No se encontró modal para la pantalla:', clickedScreen.name);
             }
         } else {
             console.log('   ❌ No se detectaron pantallas');

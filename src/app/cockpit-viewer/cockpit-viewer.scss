@@ -47,28 +47,18 @@ canvas {
   }
 }
 
-.loading-spinner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  color: #01f1f1;
-  font-family: 'Share Tech Mono', monospace;
-  letter-spacing: 2px;
-  font-size: 12px;
+// ───────���─────────────────────────────────────────────────────────
+// MODAL LAYER
+// ─────────────────────────────────────────────────────────────────
+.modal-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3000;
+  pointer-events: none;
+
+  > * {
+    pointer-events: auto;
+  }
 }
 
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 2px solid rgba(1, 241, 241, 0.2);
-  border-top-color: #01f1f1;
-  border-right-color: #01f1f1;
-  border-radius: 50%;
-  animation: spin 1.2s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
 

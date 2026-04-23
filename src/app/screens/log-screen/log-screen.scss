@@ -23,26 +23,6 @@ body {
   overflow: hidden;
 }
 
-.back-button {
-  position: absolute;
-  top: 40px;
-  left: 40px;
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  color: white;
-  padding: 15px 30px;
-  font-size: 24px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: 'Segoe UI', Arial, sans-serif;
-  z-index: 100;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateX(-5px);
-  }
-}
 
 .terminal {
   width: 90%;
