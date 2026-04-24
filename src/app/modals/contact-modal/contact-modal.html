@@ -18,9 +18,9 @@
             <h2 class="section-title">CONTACT</h2>
         </div>
         <span class="availability">
-      <span class="availability__dot"></span>
+            <span class="availability__dot"></span>
             {{ AVAILABILITY_MSG }}
-    </span>
+        </span>
     </header>
 
     <!-- ─── GRID PRINCIPAL ──────────────────────────────────── -->
@@ -67,12 +67,7 @@
                 }
             </ul>
 
-            <!-- Coordenadas decorativas -->
-            <div class="coords animate-fadein" style="--delay: 0.75s" aria-hidden="true">
-                <span class="coords__line">LAT // -38.0055° S</span>
-                <span class="coords__line">LON // -57.5426° O</span>
-                <span class="coords__line">SECTOR // ARGENTINA</span>
-            </div>
+
 
         </aside>
 
@@ -178,15 +173,15 @@
                             @if (isValid('message')) { <span class="field__ok">✓</span> }
                         </label>
                         <div class="field__wrap">
-              <textarea
-                      id="f-message"
-                      class="field__input field__input--textarea"
-                      formControlName="message"
-                      placeholder="Escribí tu mensaje aquí..."
-                      rows="5"
-                      (focus)="focusedField = 'message'"
-                      (blur)="focusedField = null"
-              ></textarea>
+                            <textarea
+                                    id="f-message"
+                                    class="field__input field__input--textarea"
+                                    formControlName="message"
+                                    placeholder="Escribí tu mensaje aquí..."
+                                    rows="5"
+                                    (focus)="focusedField = 'message'"
+                                    (blur)="focusedField = null"
+                            ></textarea>
                         </div>
                         @if (isInvalid('message')) {
                             <span class="field__error">[ MÍN. 20 CARACTERES ]</span>
@@ -196,14 +191,13 @@
                     <!-- Submit -->
                     <div class="form__footer">
 
-                        <!-- Indicador de estado del form -->
                         <span class="form__status" [class.form__status--ok]="form.valid" aria-live="polite">
-              @if (form.valid) {
-                  ● LISTO PARA TRANSMITIR
-              } @else {
-                  ○ COMPLETÁ TODOS LOS CAMPOS
-              }
-            </span>
+                            @if (form.valid) {
+                                ● LISTO PARA TRANSMITIR
+                            } @else {
+                                ○ COMPLETÁ TODOS LOS CAMPOS
+                            }
+                        </span>
 
                         <button
                                 class="submit-btn"
@@ -231,7 +225,5 @@
 
     </main>
 
-    <!-- ─── HUD INFERIOR ─────────────────────────────────────── -->
-    <footer class="sys-bar" aria-hidden="true">SYS // CHANNEL OPEN · AWAITING TRANSMISSION</footer>
 
 </section>

@@ -5,12 +5,19 @@ $bg:           #0a0204;
 $accent:       #e8604c;
 $accent-glow:  #ff8070;
 $cyan:         #01F1F1;
-$cyan-dim:     rgba(1, 241, 241, 0.65);
+$cyan-dim:     rgba(1, 241, 241, 0.80);   // era .65 — subido para legibilidad
 $green:        #39ff8a;
 $green-dim:    rgba(57, 255, 138, 0.7);
 $surface:      rgba(232, 96, 76, 0.04);
 $border:       rgba(232, 96, 76, 0.18);
 $text-hud:     rgba(232, 96, 76, 0.30);
+
+// Tokens de texto — nueva escala de contraste
+$text-primary:   rgba(#fff, 0.92);   // títulos, datos clave
+$text-secondary: rgba(#fff, 0.78);   // cuerpo, valores
+$text-meta:      rgba(#fff, 0.50);   // subtextos, lugar
+$accent-label:   rgba($accent, 0.70); // tags, keys
+$accent-meta:    rgba($accent, 0.52); // header-meta, hints
 
 $font-display: 'Orbitron', monospace;
 $font-mono:    'Share Tech Mono', monospace;
@@ -28,31 +35,27 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
 @keyframes pulse-border {
   0%, 100% { opacity: .35; }
-  50%       { opacity: .8;  }
+  50%       { opacity: .75; }
 }
 
 @keyframes scan { from { top: -2px; } to { top: 100%; } }
 
-// Scanline vertical que pasa sobre la foto
 @keyframes photo-scan {
-  0%   { top: -4px; opacity: .6; }
-  95%  { top: 100%; opacity: .6; }
+  0%   { top: -4px; opacity: .4; }
+  95%  { top: 100%; opacity: .4; }
   100% { top: 100%; opacity: 0;  }
 }
 
-// Foto aparece con efecto de "decifrado"
 @keyframes img-reveal {
   from { clip-path: inset(0 0 100% 0); filter: brightness(.4) saturate(0); }
   to   { clip-path: inset(0 0 0% 0);   filter: brightness(.88) saturate(.8); }
 }
 
-// Parpadeo del punto verde
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0; }
 }
 
-// Timeline entry desliza desde la izquierda
 @keyframes tl-slide {
   from { opacity: 0; transform: translateX(-10px); }
   to   { opacity: 1; transform: translateX(0);     }
@@ -85,14 +88,14 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse 70% 50% at 50% 20%, rgba(180, 40, 15, 0.12) 0%, transparent 65%);
+    background: radial-gradient(ellipse 70% 50% at 50% 20%, rgba(180, 40, 15, 0.10) 0%, transparent 65%);
     pointer-events: none;
     z-index: 0;
   }
 }
 
 // ─────────────────────────────────────────────────────────────────
-// HUD
+// HUD — reducido para no competir con contenido
 // ─────────────────────────────────────────────────────────────────
 .hud {
   position: fixed;
@@ -103,27 +106,29 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
 .hud__corner {
   position: absolute;
-  width: 24px; height: 24px;
+  width: 20px; height: 20px;
   border-color: $accent; border-style: solid;
-  animation: pulse-border 3.5s ease-in-out infinite;
+  animation: pulse-border 4s ease-in-out infinite;
+  opacity: .55;                              // era implícito al 100%
 
-  &--tl { top: 14px; left: 14px;   border-width: 2px 0 0 2px; }
-  &--tr { top: 14px; right: 14px;  border-width: 2px 2px 0 0; }
-  &--bl { bottom: 14px; left: 14px;  border-width: 0 0 2px 2px; animation-delay: .3s; }
-  &--br { bottom: 14px; right: 14px; border-width: 0 2px 2px 0; animation-delay: .6s; }
+  &--tl { top: 14px; left: 14px;     border-width: 1.5px 0 0 1.5px; }
+  &--tr { top: 14px; right: 14px;    border-width: 1.5px 1.5px 0 0; }
+  &--bl { bottom: 14px; left: 14px;  border-width: 0 0 1.5px 1.5px; animation-delay: .3s; }
+  &--br { bottom: 14px; right: 14px; border-width: 0 1.5px 1.5px 0; animation-delay: .6s; }
 }
 
 .hud__line {
   position: absolute; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent 0%, rgba($accent, .10) 20%, rgba($accent, .10) 80%, transparent 100%);
+  // Opacidad bajada de .10 a .06 — menos ruido
+  background: linear-gradient(90deg, transparent 0%, rgba($accent, .06) 20%, rgba($accent, .06) 80%, transparent 100%);
   &--top    { top: 10%;    }
   &--bottom { bottom: 10%; }
 }
 
 .hud__scanline {
-  position: absolute; top: 0; left: 0; width: 100%; height: 2px;
-  background: rgba($accent, .05);
-  animation: scan 8s linear 1s infinite;
+  position: absolute; top: 0; left: 0; width: 100%; height: 1px;
+  background: rgba($accent, .025);           // era .05 — más sutil
+  animation: scan 10s linear 1s infinite;   // más lento, menos distracción
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -143,8 +148,8 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 .section-tag {
   display: block;
   font-size: 9px;
-  letter-spacing: 4px;
-  color: rgba($accent, .5);
+  letter-spacing: 3px;                      // era 4px
+  color: $accent-label;                     // era rgba($accent, .5)
   text-transform: uppercase;
   margin-bottom: 6px;
 }
@@ -156,19 +161,19 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   color: #fff;
   letter-spacing: 8px;
   text-transform: uppercase;
-  text-shadow: 0 0 30px rgba(232, 96, 76, 0.35);
+  text-shadow: 0 0 24px rgba(232, 96, 76, 0.30);
   margin: 0;
 }
 
 .header-meta {
   font-size: 9px;
-  letter-spacing: 3px;
-  color: $text-hud;
+  letter-spacing: 2px;
+  color: $accent-meta;                      // era $text-hud = .30 — subido a .52
   text-transform: uppercase;
 }
 
 // ─────────────────────────────────────────────────────────────────
-// GRID PRINCIPAL (2 columnas)
+// GRID PRINCIPAL
 // ─────────────────────────────────────────────────────────────────
 .about__grid {
   position: relative;
@@ -200,13 +205,12 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
     border-color: rgba($accent, .35);
   }
 
-  // Esquinas del marco — más grandes que las del HUD
   &__c {
     position: absolute;
     width: 12px; height: 12px;
     border-color: $accent; border-style: solid;
     z-index: 2;
-    opacity: .7;
+    opacity: .6;
 
     &--tl { top: -1px;  left: -1px;  border-width: 2px 0 0 2px; }
     &--tr { top: -1px;  right: -1px; border-width: 2px 2px 0 0; }
@@ -214,10 +218,9 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
     &--br { bottom: 36px; right: -1px; border-width: 0 2px 2px 0; }
   }
 
-  // Barra de progreso scan
   &__scan-bar {
     height: 2px;
-    background: rgba($accent, .15);
+    background: rgba($accent, .12);
     margin-bottom: 6px;
     overflow: hidden;
   }
@@ -226,20 +229,19 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
     height: 100%;
     background: linear-gradient(90deg, $accent, $accent-glow);
     transition: width .08s linear;
-    box-shadow: 0 0 6px rgba($accent, .6);
+    box-shadow: 0 0 6px rgba($accent, .5);
   }
 
   &__scan-label {
     display: block;
     font-size: 8px;
-    letter-spacing: 3px;
-    color: rgba($accent, .5);
+    letter-spacing: 2px;
+    color: $accent-label;                   // era .50, ahora .70
     text-transform: uppercase;
     margin-bottom: 8px;
     min-height: 14px;
   }
 
-  // Contenedor de la imagen
   &__img-wrap {
     position: relative;
     width: 100%;
@@ -264,7 +266,6 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
   }
 
-  // Overlay con scanlines CSS sobre la foto
   &__overlay {
     position: absolute;
     inset: 0;
@@ -272,20 +273,19 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
                     0deg,
                     transparent,
                     transparent 3px,
-                    rgba(0, 0, 0, 0.06) 3px,
-                    rgba(0, 0, 0, 0.06) 4px
+                    rgba(0, 0, 0, 0.04) 3px,              // era .06
+                    rgba(0, 0, 0, 0.04) 4px
     );
     pointer-events: none;
     z-index: 1;
 
-    // Línea de scan en movimiento sobre la foto (loop)
     &::after {
       content: '';
       position: absolute;
       left: 0; right: 0;
-      height: 3px;
-      background: rgba($accent, .12);
-      animation: photo-scan 4s linear 1.2s infinite;
+      height: 2px;
+      background: rgba($accent, .08);        // era .12
+      animation: photo-scan 5s linear 1.2s infinite; // más lento
     }
   }
 
@@ -297,22 +297,21 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
     justify-content: center;
     font-size: 10px;
     letter-spacing: 3px;
-    color: rgba($accent, .25);
+    color: rgba($accent, .30);
     text-transform: uppercase;
   }
 
-  // Footer de la foto
+  // MEJORA: 7px → 9px, opacity .40 → .58
   &__footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 4px 10px;
-    font-size: 7px;
+    padding: 9px 4px 11px;
+    font-size: 9px;                         // era 7px — ilegible
     letter-spacing: 2px;
-    color: rgba($accent, .4);
+    color: rgba($accent, .58);              // era .40
     text-transform: uppercase;
     border-top: 1px solid rgba($accent, .12);
-    margin-top: 0;
   }
 }
 
@@ -324,8 +323,8 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
   &__header {
     font-size: 8px;
-    letter-spacing: 4px;
-    color: rgba($accent, .4);
+    letter-spacing: 3px;
+    color: $accent-label;
     text-transform: uppercase;
     margin-bottom: 12px;
     padding-bottom: 8px;
@@ -336,22 +335,31 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
     display: flex;
     align-items: baseline;
     gap: 0;
-    padding: 5px 0;
-    border-bottom: 1px solid rgba($accent, .06);
+    padding: 6px 0;                         // era 5px
+    border-bottom: 1px solid rgba($accent, .08); // era .06
+    transition: background .2s;
 
     &:last-child { border-bottom: none; }
+
+    // Hover sutil para confirmar escaneabilidad
+    &:hover {
+      background: rgba($accent, .04);
+      margin: 0 -8px;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
   }
 
+  // MEJORA: 8px → 9px, opacity .45 → .58
   &__key {
-    font-size: 8px;
+    font-size: 9px;                         // era 8px
     letter-spacing: 2px;
-    color: rgba($accent, .45);
+    color: rgba($accent, .58);              // era .45
     text-transform: uppercase;
     width: 90px;
     flex-shrink: 0;
   }
 
-  // Línea de puntos entre key y value
   &__dots {
     flex: 1;
     border-bottom: 1px dotted rgba($accent, .15);
@@ -359,10 +367,11 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
     min-width: 10px;
   }
 
+  // MEJORA: 8px → 9px, opacity .55 → .78
   &__value {
-    font-size: 8px;
-    letter-spacing: 2px;
-    color: rgba(#fff, .55);
+    font-size: 9px;                         // era 8px
+    letter-spacing: 1.5px;                  // era 2px — más legible
+    color: $text-secondary;                 // era rgba(#fff, .55)
     text-transform: uppercase;
     text-align: right;
     max-width: 130px;
@@ -370,7 +379,7 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
     overflow: hidden;
     text-overflow: ellipsis;
 
-    &--highlight { color: $cyan-dim; }
+    &--highlight { color: $cyan-dim; }      // $cyan-dim ahora es .80
   }
 }
 
@@ -390,19 +399,20 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   &__tag {
     display: block;
     font-size: 9px;
-    letter-spacing: 4px;
-    color: rgba($accent, .5);
+    letter-spacing: 3px;                    // era 4px
+    color: $accent-label;                   // era .50
     text-transform: uppercase;
     margin-bottom: 14px;
   }
 
+  // MEJORA: 13px → 14px, .55 → .80, line-height 2 → 1.75
   &__text {
-    font-size: 13px;
-    line-height: 2;
-    color: rgba(#fff, .55);
-    letter-spacing: .5px;
+    font-size: 14px;
+    line-height: 1.75;                      // era 2 — demasiado espacio muerto
+    color: rgba(#fff, .80);                 // era .55 — contraste real mejorado
+    letter-spacing: .3px;
     margin: 0;
-    white-space: pre-line;   // respeta saltos de línea del string
+    white-space: pre-line;
   }
 }
 
@@ -410,7 +420,7 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 .divider {
   width: 100%;
   height: 1px;
-  background: linear-gradient(90deg, rgba($accent, .4), transparent);
+  background: linear-gradient(90deg, rgba($accent, .35), transparent);
   margin-bottom: 32px;
 }
 
@@ -421,8 +431,8 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   &__tag {
     display: block;
     font-size: 9px;
-    letter-spacing: 4px;
-    color: rgba($accent, .5);
+    letter-spacing: 3px;                    // era 4px
+    color: $accent-label;
     text-transform: uppercase;
     margin-bottom: 20px;
   }
@@ -433,7 +443,6 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
     margin: 0;
     position: relative;
 
-    // Línea vertical de la timeline
     &::before {
       content: '';
       position: absolute;
@@ -441,7 +450,7 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
       top: 8px;
       bottom: 8px;
       width: 1px;
-      background: linear-gradient(180deg, $accent, rgba($accent, .1));
+      background: linear-gradient(180deg, rgba($accent, .55), rgba($accent, .08));
     }
   }
 
@@ -453,27 +462,35 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
     padding: 10px 0;
     animation: tl-slide .5s $ease-out-expo forwards var(--delay, 0s);
     opacity: 0;
+    transition: background .2s;
 
-    // Línea separadora entre entries
-    & + & { border-top: 1px solid rgba($accent, .06); }
+    & + & { border-top: 1px solid rgba($accent, .07); }
+
+    // Hover sutil
+    &:hover {
+      .timeline__title { color: $text-primary; }
+      .timeline__dot   { box-shadow: 0 0 10px rgba($accent, .65); }
+    }
 
     &--exp {
-      .timeline__dot { background: $cyan; box-shadow: 0 0 8px rgba($cyan, .5); }
-      .timeline__year { color: $cyan-dim; }
+      .timeline__dot  { background: $cyan; box-shadow: 0 0 8px rgba($cyan, .45); }
+      .timeline__year { color: rgba($cyan, .75); }
+
+      &:hover .timeline__dot { box-shadow: 0 0 12px rgba($cyan, .65); }
     }
   }
 
+  // MEJORA: 10px → 11px, .60 → .75
   &__year {
     font-family: $font-display;
-    font-size: 10px;
+    font-size: 11px;                        // era 10px
     font-weight: 700;
-    color: rgba($accent, .6);
+    color: rgba($accent, .75);             // era .60
     letter-spacing: 1px;
     padding-top: 2px;
     text-align: right;
   }
 
-  // Punto sobre la línea vertical
   &__dot {
     width: 8px;
     height: 8px;
@@ -481,44 +498,49 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
     background: $accent;
     margin-top: 4px;
     flex-shrink: 0;
-    box-shadow: 0 0 6px rgba($accent, .5);
+    box-shadow: 0 0 6px rgba($accent, .45);
     position: relative;
     z-index: 1;
+    transition: box-shadow .25s;
   }
 
   &__content {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 4px;
   }
 
+  // MEJORA: 11px → 12px, .75 → .92
   &__title {
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: rgba(#fff, .75);
+    font-size: 12px;                        // era 11px
+    letter-spacing: 1.5px;                  // era 2px
+    color: rgba(#fff, .92);                 // era .75
     text-transform: uppercase;
+    transition: color .2s;
   }
 
+  // MEJORA: 9px → 10px, .40 → .62
   &__place {
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: rgba($accent, .4);
+    font-size: 10px;                        // era 9px
+    letter-spacing: 1.5px;
+    color: rgba($accent, .62);              // era .40
     text-transform: uppercase;
   }
 
+  // MEJORA: 7px → 8px, opacity .50 → .65
   &__badge {
-    font-size: 7px;
-    letter-spacing: 2px;
-    color: rgba($accent, .5);
-    border: 1px solid rgba($accent, .25);
-    padding: 2px 7px;
+    font-size: 8px;                         // era 7px
+    letter-spacing: 1.5px;
+    color: rgba($accent, .65);             // era .50
+    border: 1px solid rgba($accent, .22);
+    padding: 2px 6px;
     text-transform: uppercase;
     align-self: start;
     margin-top: 2px;
 
     &--exp {
       color: $cyan-dim;
-      border-color: rgba($cyan, .3);
+      border-color: rgba($cyan, .28);
     }
   }
 }
@@ -531,15 +553,15 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
   &__tag {
     font-size: 9px;
-    letter-spacing: 4px;
-    color: rgba($accent, .5);
+    letter-spacing: 3px;
+    color: $accent-label;
     text-transform: uppercase;
   }
 
   &__hint {
     font-size: 8px;
     letter-spacing: 2px;
-    color: rgba($accent, .3);
+    color: rgba($accent, .42);             // era .30 — un poco más legible
     text-transform: uppercase;
   }
 }
@@ -553,17 +575,17 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   color: $cyan-dim;
   font-family: $font-mono;
   font-size: 12px;
-  letter-spacing: 4px;
+  letter-spacing: 3px;
   padding: 13px 28px;
   text-transform: uppercase;
   cursor: crosshair;
   align-self: flex-start;
   transition:
-          background    .3s $ease-out-expo,
-          border-color  .3s $ease-out-expo,
-          color         .3s $ease-out-expo,
-          box-shadow    .3s $ease-out-expo,
-          letter-spacing .3s $ease-out-expo;
+          background   .3s $ease-out-expo,
+          border-color .3s $ease-out-expo,
+          color        .3s $ease-out-expo,
+          box-shadow   .3s $ease-out-expo;
+  // letter-spacing eliminado del transition — evita layout shift
 
   &__icon {
     width: 16px;
@@ -574,7 +596,7 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
 
   &__bracket {
-    opacity: .5;
+    opacity: .55;
     font-size: 14px;
     transition: transform .3s $ease-out-expo;
   }
@@ -583,11 +605,23 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
     background: rgba($cyan, .10);
     border-color: $cyan;
     color: $cyan;
-    letter-spacing: 5px;
-    box-shadow: 0 0 22px rgba(1, 241, 241, 0.25), inset 0 0 12px rgba(1, 241, 241, 0.06);
+    // Sin cambio de letter-spacing — elimina layout shift
+    box-shadow: 0 0 20px rgba(1, 241, 241, 0.22), inset 0 0 10px rgba(1, 241, 241, 0.05);
 
     .cv-btn__icon    { transform: translateY(2px); }
-    .cv-btn__bracket { transform: translateY(2px); }
+    .cv-btn__bracket { transform: translateY(2px); opacity: .85; }
+  }
+
+  // Accesibilidad: estado focus para teclado
+  &:focus-visible {
+    outline: 2px solid $cyan;
+    outline-offset: 4px;
+    box-shadow: 0 0 16px rgba($cyan, .30);
+  }
+
+  &:active {
+    background: rgba($cyan, .15);
+    transform: translateY(1px);
   }
 }
 
@@ -603,7 +637,7 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   color: $text-hud;
   text-transform: uppercase;
   pointer-events: none;
-  opacity: .3;
+  opacity: .35;                             // era .30 — levemente más visible
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -618,9 +652,9 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 @media (max-width: 600px) {
-  .col-left       { flex-direction: column; }
-  .photo-frame    { width: 100%; }
-  .about__header  { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .col-left        { flex-direction: column; }
+  .photo-frame     { width: 100%; }
+  .about__header   { flex-direction: column; align-items: flex-start; gap: 6px; }
   .timeline__entry { grid-template-columns: 36px 14px 1fr auto; gap: 8px; }
-  .cv-btn         { font-size: 10px; letter-spacing: 2px; padding: 11px 20px; }
+  .cv-btn          { font-size: 10px; letter-spacing: 2px; padding: 11px 20px; }
 }

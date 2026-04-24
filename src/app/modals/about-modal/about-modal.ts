@@ -5,9 +5,11 @@ import {
     AfterViewInit,
     ElementRef,
     ViewChild,
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
 } from '@angular/core';
 
-import {UpperCasePipe} from '@angular/common'
+import { UpperCasePipe } from '@angular/common';
 
 export interface DataField {
     key:   string;
@@ -27,13 +29,10 @@ export interface TimelineEntry {
     standalone: true,
     templateUrl: './about-modal.html',
     styleUrls: ['./about-modal.scss'],
-    imports: [
-        UpperCasePipe
-    ]
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [ UpperCasePipe ]
 })
 export class AboutComponent implements OnInit, AfterViewInit, OnDestroy {
-
-    // ─── CONTENIDO — editá con tus datos reales ──────────────────────────────
 
     readonly NAME      = 'MATIAS OYHAMBURU';
     readonly ROLE      = 'Fullstack Developer';
@@ -48,42 +47,20 @@ una experiencia de usuario memorable. Siempre buscando
 aprender nuevas tecnologías y resolver problemas reales.`;
 
     readonly dataFields: DataField[] = [
-        { key: 'NOMBRE',      value: 'MATIAS OYHAMBURU'     },
-        { key: 'ROL',         value: 'FULLSTACK DEVELOPER',  highlight: true },
-        { key: 'UBICACIÓN',   value: 'ARGENTINA'             },
-        { key: 'IDIOMAS',     value: 'ESPAÑOL / INGLÉS'      },
+        { key: 'NOMBRE',      value: 'MATIAS OYHAMBURU'      },
+        { key: 'ROL',         value: 'FULLSTACK DEVELOPER',   highlight: true },
+        { key: 'UBICACIÓN',   value: 'ARGENTINA'              },
+        { key: 'IDIOMAS',     value: 'ESPAÑOL / INGLÉS'       },
         { key: 'STACK',       value: 'SPRING BOOT · ANGULAR', highlight: true },
-        { key: 'ESTADO',      value: '● DISPONIBLE',         highlight: true },
+        { key: 'ESTADO',      value: '● DISPONIBLE',          highlight: true },
     ];
 
     readonly timeline: TimelineEntry[] = [
-        {
-            year:  '2025',
-            title: 'Desarrollador Fullstack Junior',
-            place: 'Freelance / Proyectos personales',
-            type:  'exp',
-        },
-        {
-            year:  '2024',
-            title: 'Técnico en Programación',
-            place: 'Universidad Tecnológica Nacional',
-            type:  'edu',
-        },
-        {
-            year:  '2023',
-            title: 'Desarrollo Web Fullstack',
-            place: 'Coderhouse',
-            type:  'edu',
-        },
-        {
-            year:  '2022',
-            title: 'Java + Spring Boot',
-            place: 'Autodidacta / Udemy',
-            type:  'edu',
-        },
+        { year: '2025', title: 'Desarrollador Fullstack Junior', place: 'Freelance / Proyectos personales', type: 'exp' },
+        { year: '2024', title: 'Técnico en Programación',        place: 'Universidad Tecnológica Nacional', type: 'edu' },
+        { year: '2023', title: 'Desarrollo Web Fullstack',       place: 'Coderhouse',                      type: 'edu' },
+        { year: '2022', title: 'Java + Spring Boot',             place: 'Autodidacta / Udemy',             type: 'edu' },
     ];
-
-    // ─────────────────────────────────────────────────────────────────────────
 
     @ViewChild('photoCanvas', { static: false })
     photoCanvasRef?: ElementRef<HTMLCanvasElement>;
@@ -91,6 +68,8 @@ aprender nuevas tecnologías y resolver problemas reales.`;
     scanProgress = 0;
     isScanDone   = false;
     private scanInterval: ReturnType<typeof setInterval> | null = null;
+
+    constructor(private cdr: ChangeDetectorRef) {}
 
     ngOnInit(): void {}
 
@@ -102,7 +81,6 @@ aprender nuevas tecnologías y resolver problemas reales.`;
         if (this.scanInterval) clearInterval(this.scanInterval);
     }
 
-    // ─── SCAN ANIMATION — barra de progreso tipo "cargando imagen" ────────────
     private startScan(): void {
         this.scanProgress = 0;
         this.scanInterval = setInterval(() => {
@@ -112,6 +90,7 @@ aprender nuevas tecnologías y resolver problemas reales.`;
                 this.isScanDone   = true;
                 clearInterval(this.scanInterval!);
             }
+            this.cdr.markForCheck(); // necesario con OnPush
         }, 60);
     }
 
@@ -119,7 +98,6 @@ aprender nuevas tecnologías y resolver problemas reales.`;
         return `${Math.min(this.scanProgress, 100).toFixed(1)}%`;
     }
 
-    // ─── CV DOWNLOAD ──────────────────────────────────────────────────────────
     downloadCV(): void {
         const a = document.createElement('a');
         a.href     = this.CV_URL;
