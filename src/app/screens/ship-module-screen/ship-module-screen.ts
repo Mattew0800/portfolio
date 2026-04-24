@@ -2,11 +2,13 @@ import { Component, OnInit, ViewChild, ElementRef, OnDestroy, AfterViewInit } fr
 import { Router } from '@angular/router';
 import { ModuleStateService } from '../../services/module-state.service';
 import { Subscription } from 'rxjs';
+import {CockpitScreenFrameComponent} from "../../components/cockpit-screen-frame/cockpit-screen-frame";
+import {ModalService} from "../../services/modal.service";
 
 @Component({
   selector: 'app-ship-module-screen',
   standalone: true,
-  imports: [],
+  imports: [CockpitScreenFrameComponent],
   templateUrl: './ship-module-screen.html',
   styleUrl: './ship-module-screen.scss',
 })
@@ -16,7 +18,8 @@ export class ShipModuleScreen implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private moduleStateService: ModuleStateService
+    private moduleStateService: ModuleStateService,
+    public modalService: ModalService
   ) {}
 
   ngOnInit(): void {
@@ -72,5 +75,9 @@ export class ShipModuleScreen implements OnInit, AfterViewInit, OnDestroy {
       }
     }
   }
+
+    onBack(): void {
+        this.modalService.closeModal();
+    }
 }
 

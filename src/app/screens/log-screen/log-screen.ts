@@ -4,10 +4,12 @@ import {Router, NavigationEnd} from "@angular/router";
 import {CommonModule} from "@angular/common";
 import {filter, Subject} from "rxjs";
 import {takeUntil} from "rxjs/operators";
+import {CockpitScreenFrameComponent} from "../../components/cockpit-screen-frame/cockpit-screen-frame";
+import {ModalService} from "../../services/modal.service";
 
 @Component({
   selector: 'app-log-screen',
-  imports: [CommonModule],
+    imports: [CommonModule, CockpitScreenFrameComponent],
   templateUrl: './log-screen.html',
   styleUrl: './log-screen.scss',
 })
@@ -19,7 +21,8 @@ export class LogScreen implements OnInit, OnDestroy {
 
     constructor(
         private router: Router,
-        private moduleStateService: ModuleStateService
+        private moduleStateService: ModuleStateService,
+        public modalService: ModalService
     ) {}
 
     ngOnInit(): void {
@@ -98,8 +101,8 @@ export class LogScreen implements OnInit, OnDestroy {
         });
     }
 
-    goBack(): void {
-        this.router.navigate(['/']);
+    onBack(): void {
+        this.modalService.closeModal();
     }
 }
 

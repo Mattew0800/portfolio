@@ -10,6 +10,8 @@ import {
 } from '@angular/core';
 
 import { UpperCasePipe } from '@angular/common';
+import {CockpitScreenFrameComponent} from "../../components/cockpit-screen-frame/cockpit-screen-frame";
+import { ModalService } from "../../services/modal.service";
 
 export interface DataField {
     key:   string;
@@ -30,7 +32,7 @@ export interface TimelineEntry {
     templateUrl: './about-modal.html',
     styleUrls: ['./about-modal.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [ UpperCasePipe ]
+    imports: [UpperCasePipe, CockpitScreenFrameComponent]
 })
 export class AboutComponent implements OnInit, AfterViewInit, OnDestroy {
 
@@ -69,7 +71,7 @@ aprender nuevas tecnologías y resolver problemas reales.`;
     isScanDone   = false;
     private scanInterval: ReturnType<typeof setInterval> | null = null;
 
-    constructor(private cdr: ChangeDetectorRef) {}
+    constructor(private cdr: ChangeDetectorRef, private modalService: ModalService) {}
 
     ngOnInit(): void {}
 
@@ -96,6 +98,10 @@ aprender nuevas tecnologías y resolver problemas reales.`;
 
     get scanWidth(): string {
         return `${Math.min(this.scanProgress, 100).toFixed(1)}%`;
+    }
+
+    onBack(): void {
+        this.modalService.closeModal();
     }
 
     downloadCV(): void {

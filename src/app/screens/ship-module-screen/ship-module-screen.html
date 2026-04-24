@@ -1,5 +1,15 @@
+<app-cockpit-screen-frame (back)="onBack()">
 <div class="ship-wrapper">
+    <!-- Leyenda Izquierda -->
+    <div class="legend-left">
+        <div class="legend-item">1. Home</div>
+        <div class="legend-item">2. Projects</div>
+        <div class="legend-item">3. Skills</div>
+        <div class="legend-item">4. About</div>
+        <div class="legend-item">5. Contact</div>
+    </div>
 
+    <!-- Plano Principal -->
     <img src="assets/plane.png" alt="nave" />
     <svg #svg viewBox="0 0 166 622" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">
         <g id="SPACEFLIGHT MODULES">
@@ -11,4 +21,17 @@
         </g>
     </svg>
 
+    <!-- Leyenda Derecha -->
+    <div class="legend-right">
+        <div class="legend-status visited">
+            <span class="dot visited-dot"></span>
+            <span class="text">VISITED</span>
+        </div>
+        <div class="legend-status unvisited">
+            <span class="dot unvisited-dot"></span>
+            <span class="text">UNVISITED</span>
+        </div>
+    </div>
+
 </div>
+</app-cockpit-screen-frame>

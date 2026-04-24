@@ -5,6 +5,8 @@ import {
     Validators,
     AbstractControl,
 } from '@angular/forms';
+import {CockpitScreenFrameComponent} from "../../components/cockpit-screen-frame/cockpit-screen-frame";
+import {ModalService} from "../../services/modal.service";
 
 export interface ContactChannel {
     id:      string;
@@ -18,7 +20,10 @@ export interface ContactChannel {
     selector: 'app-contact-modal',
     standalone: true,
     templateUrl: './contact-modal.html',
-    styleUrls:   ['./contact-modal.scss'],
+    styleUrls: ['./contact-modal.scss'],
+    imports: [
+        CockpitScreenFrameComponent
+    ]
 })
 export class ContactComponent {
 
@@ -61,7 +66,7 @@ export class ContactComponent {
     formState: 'idle' | 'sending' | 'sent' | 'error' = 'idle';
     focusedField: string | null = null;
 
-    constructor(private fb: FormBuilder) {
+    constructor(private fb: FormBuilder, public modalService: ModalService) {
         this.form = this.fb.group({
             name:    ['', [Validators.required, Validators.minLength(2)]],
             email:   ['', [Validators.required, Validators.email]],
@@ -115,5 +120,9 @@ export class ContactComponent {
 
     openChannel(ch: ContactChannel): void {
         window.open(ch.url, '_blank', 'noopener,noreferrer');
+    }
+
+    onBack(): void {
+        this.modalService.closeModal();
     }
 }

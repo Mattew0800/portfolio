@@ -7,6 +7,8 @@ import {
     HostListener,
 } from '@angular/core';
 import { LowerCasePipe } from '@angular/common';
+import {CockpitScreenFrameComponent} from "../../components/cockpit-screen-frame/cockpit-screen-frame";
+import {ModalService} from "../../services/modal.service";
 
 export interface Project {
     id:          string;
@@ -27,9 +29,12 @@ export interface Project {
     selector: 'app-projects',
     templateUrl: './projects-modal.html',
     styleUrls: ['./projects-modal.scss'],
-    imports: [LowerCasePipe],
+    imports: [LowerCasePipe, CockpitScreenFrameComponent],
 })
 export class ProjectsComponent implements OnInit, OnDestroy {
+
+    constructor(public modalService: ModalService) {
+    }
 
     readonly projects: Project[] = [
         {
@@ -111,6 +116,10 @@ export class ProjectsComponent implements OnInit, OnDestroy {
             this.isClosing       = false;
             this.selectedProject = null;
         }, 380);
+    }
+
+    onBack(): void {
+        this.modalService.closeModal();
     }
 
     @HostListener('document:keydown.escape')

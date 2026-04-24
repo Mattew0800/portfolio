@@ -7,14 +7,13 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import html2canvas from 'html2canvas';
 import { LogScreen } from '../screens/log-screen/log-screen';
 import { MainScreen } from '../screens/main-screen/main-screen';
-import { ShipModuleScreen } from '../screens/ship-module-screen/ship-module-screen';
 import { ModalService } from '../services/modal.service';
 import { SkillsModalComponent } from '../modals/skills-modal/skills-modal';
-import { ShipModuleModalComponent } from '../modals/ship-module-modal/ship-module-modal';
 import { LogModalComponent } from '../modals/log-modal/log-modal';
 import { ProjectsComponent } from '../modals/projects-modal/projects-modal';
 import {AboutComponent} from "../modals/about-modal/about-modal";
 import {ContactComponent} from "../modals/contact-modal/contact-modal";
+import { ShipModalComponent } from '../modals/ship-modal-component/ship-modal-component';
 
 @Component({
     selector: 'app-cockpit-viewer',
@@ -24,9 +23,9 @@ import {ContactComponent} from "../modals/contact-modal/contact-modal";
         ProjectsComponent,
         SkillsModalComponent,
         ContactComponent,
-        ShipModuleModalComponent,
         LogModalComponent,
         AboutComponent,
+        ShipModalComponent,
     ],
     templateUrl: './cockpit-viewer.html',
     styleUrl: './cockpit-viewer.scss',
@@ -263,7 +262,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             let component: Type<any> | null = null;
             switch (mesh.name) {
                 case 'Plane_1':
-                    component = ShipModuleScreen;
+                    component = ShipModalComponent;
                     break;
                 case 'Plane_2':
                     component = LogScreen;
@@ -279,7 +278,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                 // Crear canvas y textura para esta pantalla usando el componente Angular
                 this.createScreenTextureFromComponent(mesh, component);
                 this.texturesRendered++;
-                console.log(`✅ Pantalla ${mesh.name} renderizada (${this.texturesRendered}/${this.screenMeshes.length})`);
+                console.log(`✅ Pantalla ${mesh.name} renderizada (${this.texturesRendered}/${this.screenMeshes.length - 1})`);
 
                 // Si es la pantalla principal, crear planos interactivos para los LI
                 if (mesh.name === 'Plane_3') {
@@ -301,14 +300,14 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
     private checkIfFullyLoaded(): void {
         console.log(`⏳ Verificando estado de carga...`);
         console.log(`   Videos: ${this.videosLoaded}/${this.videosRequired}`);
-        console.log(`   Texturas: ${this.texturesRendered}/${this.screenMeshes.length}`);
+        console.log(`   Texturas: ${this.texturesRendered}/${this.screenMeshes.length - 1}`); // -1 porque Plane_1 es modal
         console.log(`   Primer frame: ${this.firstFrameRendered}`);
 
         // Esperar a que todo esté listo
         const checkReady = () => {
             if (
                 this.videosLoaded >= this.videosRequired &&
-                this.texturesRendered >= this.screenMeshes.length &&
+                this.texturesRendered >= this.screenMeshes.length - 1 && // -1 porque Plane_1 es modal
                 this.firstFrameRendered
             ) {
                 console.log('✅ ¡COCKPIT COMPLETAMENTE CARGADO!');

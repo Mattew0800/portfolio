@@ -1,142 +1,135 @@
-<section class="about">
+<app-cockpit-screen-frame (back)="onBack()">
+    <section class="about">
 
-    <!-- ─── HUD ──────────────────────────────────────────────── -->
-    <div class="hud" aria-hidden="true">
-        <span class="hud__corner hud__corner--tl"></span>
-        <span class="hud__corner hud__corner--tr"></span>
-        <span class="hud__corner hud__corner--bl"></span>
-        <span class="hud__corner hud__corner--br"></span>
-        <div class="hud__line hud__line--top"></div>
-        <div class="hud__line hud__line--bottom"></div>
-        <div class="hud__scanline"></div>
-    </div>
 
-    <!-- ─── HEADER ───────────────────────────────────────────── -->
-    <header class="about__header animate-fadein" style="--delay: 0.1s">
-        <div>
-            <span class="section-tag">// PERSONNEL FILE</span>
-            <h2 class="section-title">ABOUT</h2>
-        </div>
-        <span class="header-meta">ACCESS LEVEL: PUBLIC</span>
-    </header>
 
-    <!-- ─── GRID PRINCIPAL ──────────────────────────────────── -->
-    <main class="about__grid">
+        <!-- ─── HEADER ───────────────────────────────────────────── -->
+        <header class="about__header animate-fadein" style="--delay: 0.1s">
+            <div>
+                <span class="section-tag">// PERSONNEL FILE</span>
+                <h2 class="section-title">ABOUT</h2>
+            </div>
+            <span class="header-meta">ACCESS LEVEL: PUBLIC</span>
+        </header>
 
-        <!-- ══════════════════════ COLUMNA IZQUIERDA ══════════════ -->
-        <div class="col-left animate-fadein" style="--delay: 0.2s">
+        <!-- ─── GRID PRINCIPAL ──────────────────────────────────── -->
+        <main class="about__grid">
 
-            <!-- Foto con marco HUD -->
-            <div class="photo-frame" [class.photo-frame--ready]="isScanDone">
+            <!-- ══════════════════════ COLUMNA IZQUIERDA ══════════════ -->
+            <div class="col-left animate-fadein" style="--delay: 0.2s">
 
-                <span class="photo-frame__c photo-frame__c--tl" aria-hidden="true"></span>
-                <span class="photo-frame__c photo-frame__c--tr" aria-hidden="true"></span>
-                <span class="photo-frame__c photo-frame__c--bl" aria-hidden="true"></span>
-                <span class="photo-frame__c photo-frame__c--br" aria-hidden="true"></span>
+                <!-- Foto con marco HUD -->
+                <div class="photo-frame" [class.photo-frame--ready]="isScanDone">
 
-                <div class="photo-frame__scan-bar" aria-hidden="true">
-                    <div class="photo-frame__scan-fill" [style.width]="scanWidth"></div>
-                </div>
-                <span class="photo-frame__scan-label" aria-hidden="true">
+                    <span class="photo-frame__c photo-frame__c--tl" aria-hidden="true"></span>
+                    <span class="photo-frame__c photo-frame__c--tr" aria-hidden="true"></span>
+                    <span class="photo-frame__c photo-frame__c--bl" aria-hidden="true"></span>
+                    <span class="photo-frame__c photo-frame__c--br" aria-hidden="true"></span>
+
+                    <div class="photo-frame__scan-bar" aria-hidden="true">
+                        <div class="photo-frame__scan-fill" [style.width]="scanWidth"></div>
+                    </div>
+                    <span class="photo-frame__scan-label" aria-hidden="true">
                     @if (!isScanDone) { SCANNING... {{ scanWidth }} } @else { ● ID VERIFIED }
                 </span>
 
-                <div class="photo-frame__img-wrap">
-                    <img
-                            class="photo-frame__img"
-                            [src]="PHOTO_URL"
-                            [alt]="NAME"
-                            [class.photo-frame__img--visible]="isScanDone"
-                            loading="eager"
-                            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
-                    />
-                    <div class="photo-frame__fallback" style="display:none" aria-hidden="true">
-                        <span>[ NO SIGNAL ]</span>
+                    <div class="photo-frame__img-wrap">
+                        <img
+                                class="photo-frame__img"
+                                [src]="PHOTO_URL"
+                                [alt]="NAME"
+                                [class.photo-frame__img--visible]="isScanDone"
+                                loading="eager"
+                                onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+                        />
+                        <div class="photo-frame__fallback" style="display:none" aria-hidden="true">
+                            <span>[ NO SIGNAL ]</span>
+                        </div>
+                        <div class="photo-frame__overlay" aria-hidden="true"></div>
                     </div>
-                    <div class="photo-frame__overlay" aria-hidden="true"></div>
+
+                    <div class="photo-frame__footer" aria-hidden="true">
+                        <span>{{ NAME }}</span>
+                        <span>{{ ROLE | uppercase }}</span>
+                    </div>
                 </div>
 
-                <div class="photo-frame__footer" aria-hidden="true">
-                    <span>{{ NAME }}</span>
-                    <span>{{ ROLE | uppercase }}</span>
-                </div>
-            </div>
-
-            <!-- Datos del sistema -->
-            <div class="sys-data animate-fadein" style="--delay: 0.5s" role="list" aria-label="Datos personales">
-                <div class="sys-data__header" aria-hidden="true">// SYSTEM DATA</div>
-                @for (field of dataFields; track field.key; let i = $index) {
-                    <div
-                            class="sys-data__row animate-fadein"
-                            style="--delay: {{ 0.55 + i * 0.06 }}s"
-                            role="listitem"
-                    >
-                        <span class="sys-data__key">{{ field.key }}</span>
-                        <span class="sys-data__dots" aria-hidden="true"></span>
-                        <span class="sys-data__value" [class.sys-data__value--highlight]="field.highlight">
+                <!-- Datos del sistema -->
+                <div class="sys-data animate-fadein" style="--delay: 0.5s" role="list" aria-label="Datos personales">
+                    <div class="sys-data__header" aria-hidden="true">// SYSTEM DATA</div>
+                    @for (field of dataFields; track field.key; let i = $index) {
+                        <div
+                                class="sys-data__row animate-fadein"
+                                style="--delay: {{ 0.55 + i * 0.06 }}s"
+                                role="listitem"
+                        >
+                            <span class="sys-data__key">{{ field.key }}</span>
+                            <span class="sys-data__dots" aria-hidden="true"></span>
+                            <span class="sys-data__value" [class.sys-data__value--highlight]="field.highlight">
                             {{ field.value }}
                         </span>
-                    </div>
-                }
+                        </div>
+                    }
+                </div>
+
             </div>
 
-        </div>
+            <!-- ══════════════════════ COLUMNA DERECHA ════════════════ -->
+            <div class="col-right">
 
-        <!-- ══════════════════════ COLUMNA DERECHA ════════════════ -->
-        <div class="col-right">
+                <div class="bio animate-fadein" style="--delay: 0.3s">
+                    <span class="bio__tag">// BRIEF</span>
+                    <p class="bio__text">{{ BIO }}</p>
+                </div>
 
-            <div class="bio animate-fadein" style="--delay: 0.3s">
-                <span class="bio__tag">// BRIEF</span>
-                <p class="bio__text">{{ BIO }}</p>
-            </div>
+                <div class="divider animate-fadein" style="--delay: 0.5s" aria-hidden="true"></div>
 
-            <div class="divider animate-fadein" style="--delay: 0.5s" aria-hidden="true"></div>
+                <div class="timeline animate-fadein" style="--delay: 0.55s" aria-label="Historial">
+                    <span class="timeline__tag">// ACTIVITY LOG</span>
 
-            <div class="timeline animate-fadein" style="--delay: 0.55s" aria-label="Historial">
-                <span class="timeline__tag">// ACTIVITY LOG</span>
-
-                <ol class="timeline__list">
-                    @for (entry of timeline; track entry.title; let i = $index) {
-                        <li
-                                class="timeline__entry animate-fadein"
-                                style="--delay: {{ 0.6 + i * 0.1 }}s"
-                                [class.timeline__entry--exp]="entry.type === 'exp'"
-                        >
-                            <span class="timeline__year">{{ entry.year }}</span>
-                            <span class="timeline__dot" aria-hidden="true"></span>
-                            <div class="timeline__content">
-                                <span class="timeline__title">{{ entry.title }}</span>
-                                <span class="timeline__place">{{ entry.place }}</span>
-                            </div>
-                            <span
-                                    class="timeline__badge"
-                                    [class.timeline__badge--exp]="entry.type === 'exp'"
+                    <ol class="timeline__list">
+                        @for (entry of timeline; track entry.title; let i = $index) {
+                            <li
+                                    class="timeline__entry animate-fadein"
+                                    style="--delay: {{ 0.6 + i * 0.1 }}s"
+                                    [class.timeline__entry--exp]="entry.type === 'exp'"
                             >
+                                <span class="timeline__year">{{ entry.year }}</span>
+                                <span class="timeline__dot" aria-hidden="true"></span>
+                                <div class="timeline__content">
+                                    <span class="timeline__title">{{ entry.title }}</span>
+                                    <span class="timeline__place">{{ entry.place }}</span>
+                                </div>
+                                <span
+                                        class="timeline__badge"
+                                        [class.timeline__badge--exp]="entry.type === 'exp'"
+                                >
                                 {{ entry.type === 'exp' ? 'EXP' : 'EDU' }}
                             </span>
-                        </li>
-                    }
-                </ol>
+                            </li>
+                        }
+                    </ol>
+                </div>
+
+                <div class="divider animate-fadein" style="--delay: 1.1s" aria-hidden="true"></div>
+
+                <div class="cv-section animate-fadein" style="--delay: 1.2s">
+                    <span class="cv-section__tag">// DOCUMENTS</span>
+                    <button class="cv-btn" (click)="downloadCV()" aria-label="Descargar CV">
+                        <svg class="cv-btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                        </svg>
+                        <span class="cv-btn__text">DESCARGAR CV</span>
+                        <span class="cv-btn__bracket" aria-hidden="true">↓</span>
+                    </button>
+                    <span class="cv-section__hint">PDF — VERSIÓN ACTUALIZADA {{ '2025' }}</span>
+                </div>
+
             </div>
 
-            <div class="divider animate-fadein" style="--delay: 1.1s" aria-hidden="true"></div>
+        </main>
 
-            <div class="cv-section animate-fadein" style="--delay: 1.2s">
-                <span class="cv-section__tag">// DOCUMENTS</span>
-                <button class="cv-btn" (click)="downloadCV()" aria-label="Descargar CV">
-                    <svg class="cv-btn__icon" viewBox="0 0 24 24" aria-hidden="true">
-                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
-                    </svg>
-                    <span class="cv-btn__text">DESCARGAR CV</span>
-                    <span class="cv-btn__bracket" aria-hidden="true">↓</span>
-                </button>
-                <span class="cv-section__hint">PDF — VERSIÓN ACTUALIZADA {{ '2025' }}</span>
-            </div>
+        <footer class="sys-bar" aria-hidden="true">SYS // PERSONNEL FILE LOADED</footer>
 
-        </div>
-
-    </main>
-
-    <footer class="sys-bar" aria-hidden="true">SYS // PERSONNEL FILE LOADED</footer>
-
-</section>
+    </section>
+</app-cockpit-screen-frame>

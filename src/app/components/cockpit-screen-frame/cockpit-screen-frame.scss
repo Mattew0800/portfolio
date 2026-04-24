@@ -1,0 +1,417 @@
+// cockpit-screen-frame.component.scss
+
+// ── Design tokens ────────────────────────────────────────────
+:host {
+  --csf-bezel-bg:      #1a1c1f;
+  --csf-bezel-edge:    #2c2f34;
+  --csf-bezel-shadow:  #0a0b0d;
+  --csf-screen-bg:     #040608;
+  --csf-glow-color:    #00d4ff;
+  --csf-glow-dim:      rgba(0, 212, 255, 0.12);
+  --csf-glow-mid:      rgba(0, 212, 255, 0.06);
+  --csf-accent:        #00d4ff;
+  --csf-accent-amber:  #e8a020;
+  --csf-accent-green:  #39e060;
+  --csf-text:          #a8c0cc;
+  --csf-text-dim:      #4a6070;
+  --csf-corner-size:   18px;
+  --csf-radius:        6px;
+  --csf-bezel-pad:     16px;
+  --csf-font:          'Share Tech Mono', 'Courier New', monospace;
+
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+// ── Outer wrapper ────────────────────────────────────────────
+.csf-outer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background:
+          radial-gradient(ellipse 80% 60% at 50% 0%, #1f2428 0%, #0e1012 100%);
+  padding: 0;
+  box-sizing: border-box;
+
+  // Textura sutil de panel
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+            repeating-linear-gradient(
+                            0deg,
+                            transparent,
+                            transparent 3px,
+                            rgba(0,0,0,0.18) 3px,
+                            rgba(0,0,0,0.18) 4px
+            );
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+// ── Status bar superior ──────────────────────────────────────
+.csf-status-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 20px;
+  background: linear-gradient(180deg, #0f1114 0%, #141618 100%);
+  border-bottom: 1px solid #22262b;
+  position: relative;
+  z-index: 1;
+}
+
+.csf-status-left,
+.csf-status-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.csf-status-center {
+  text-align: center;
+}
+
+// ── LED indicators ───────────────────────────────────────────
+.csf-led {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  position: relative;
+
+  &--green {
+    background: var(--csf-accent-green);
+    box-shadow: 0 0 6px 2px rgba(57, 224, 96, 0.7);
+    animation: csf-led-pulse 2.4s ease-in-out infinite;
+  }
+
+  &--amber {
+    background: var(--csf-accent-amber);
+    box-shadow: 0 0 5px 1px rgba(232, 160, 32, 0.5);
+    animation: csf-led-pulse 3.1s ease-in-out infinite 0.6s;
+  }
+}
+
+@keyframes csf-led-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
+}
+
+// ── Labels tipográficos ──────────────────────────────────────
+.csf-label {
+  font-family: var(--csf-font);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--csf-text);
+  text-transform: uppercase;
+
+  &--dim {
+    color: var(--csf-text-dim);
+  }
+}
+
+// ── Bisel principal ──────────────────────────────────────────
+.csf-bezel {
+  flex: 1 1 auto;
+  position: relative;
+  margin: 0 12px;
+  padding: var(--csf-bezel-pad);
+  background:
+          // Borde superior iluminado
+          linear-gradient(180deg,
+                  #2e3238 0px, #2e3238 1px,
+                  #1e2124 1px, #1e2124 8px,
+                  #181a1d 8px
+          ),
+            // Base grafito
+          linear-gradient(160deg, #1d2024 0%, #141618 50%, #1a1c20 100%);
+  border-radius: var(--csf-radius);
+  box-shadow:
+          // Sombra exterior profunda
+          0 8px 40px rgba(0,0,0,0.85),
+          0 2px 0   rgba(255,255,255,0.04) inset,
+          0 -2px 0  rgba(0,0,0,0.6) inset,
+            // Borde lateral izquierdo claro (fuente de luz simulada)
+          2px 0 0   rgba(255,255,255,0.03) inset,
+          -2px 0 0  rgba(0,0,0,0.5) inset;
+  overflow: hidden;
+
+  // Relieve superior del bisel
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+                    180deg,
+                    rgba(255,255,255,0.025) 0%,
+                    transparent 30%
+    );
+    pointer-events: none;
+    border-radius: inherit;
+  }
+}
+
+// ── Esquinas metálicas ───────────────────────────────────────
+.csf-corner {
+  position: absolute;
+  width: var(--csf-corner-size);
+  height: var(--csf-corner-size);
+  z-index: 10;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    background: #3a3f47;
+    box-shadow: 0 0 4px rgba(0,0,0,0.8);
+  }
+
+  &--tl { top: 0; left: 0;
+    &::before { top: 0;   left: 0; width: var(--csf-corner-size); height: 2px; }
+    &::after  { top: 0;   left: 0; width: 2px; height: var(--csf-corner-size); }
+  }
+  &--tr { top: 0; right: 0;
+    &::before { top: 0; right: 0; width: var(--csf-corner-size); height: 2px; }
+    &::after  { top: 0; right: 0; width: 2px; height: var(--csf-corner-size); }
+  }
+  &--bl { bottom: 0; left: 0;
+    &::before { bottom: 0; left: 0; width: var(--csf-corner-size); height: 2px; }
+    &::after  { bottom: 0; left: 0; width: 2px; height: var(--csf-corner-size); }
+  }
+  &--br { bottom: 0; right: 0;
+    &::before { bottom: 0; right: 0; width: var(--csf-corner-size); height: 2px; }
+    &::after  { bottom: 0; right: 0; width: 2px; height: var(--csf-corner-size); }
+  }
+}
+
+// ── Pantalla activa ──────────────────────────────────────────
+.csf-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--csf-screen-bg);
+  border-radius: 3px;
+  overflow: hidden;
+
+  // Bisel interior: ranura física entre vidrio y marco
+  box-shadow:
+          0 0 0 1px #0a0c0e,
+          0 0 0 3px #111316,
+          0 0 0 4px #1c1f23,
+            // Glow interno del screen
+          inset 0 0 60px var(--csf-glow-dim),
+          inset 0 0 20px var(--csf-glow-mid);
+
+  // Reflexión de vidrio superior
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 35%;
+    background: linear-gradient(
+                    180deg,
+                    rgba(255,255,255,0.035) 0%,
+                    transparent 100%
+    );
+    pointer-events: none;
+    z-index: 20;
+    border-radius: 3px 3px 0 0;
+  }
+}
+
+// ── Scanlines ────────────────────────────────────────────────
+.csf-scanlines {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+                  0deg,
+                  transparent,
+                  transparent 2px,
+                  rgba(0, 0, 0, 0.18) 2px,
+                  rgba(0, 0, 0, 0.18) 4px
+  );
+  pointer-events: none;
+  z-index: 15;
+  mix-blend-mode: multiply;
+}
+
+// ── Vignette ─────────────────────────────────────────────────
+.csf-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+                  ellipse 85% 80% at 50% 50%,
+                  transparent 40%,
+                  rgba(0, 0, 0, 0.5) 100%
+  );
+  pointer-events: none;
+  z-index: 16;
+}
+
+// ── Power-on overlay (animación encendido) ───────────────────
+.csf-power-overlay {
+  position: absolute;
+  inset: 0;
+  background: #000;
+  z-index: 30;
+  pointer-events: none;
+  opacity: 0;
+  transition: none;
+
+  .csf--powered-on & {
+    opacity: 0;
+  }
+}
+
+// ── Contenido interno ────────────────────────────────────────
+.csf-content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px 28px;
+  box-sizing: border-box;
+  color: var(--csf-text);
+
+  // Scrollbar estilo industrial
+  scrollbar-width: thin;
+  scrollbar-color: #2a3a44 transparent;
+
+  &::-webkit-scrollbar       { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background: #2a3a44;
+    border-radius: 2px;
+    &:hover { background: var(--csf-accent); }
+  }
+}
+
+// ── Panel inferior ───────────────────────────────────────────
+.csf-bottom-panel {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 20px;
+  background: linear-gradient(0deg, #0c0e10 0%, #141618 100%);
+  border-top: 1px solid #22262b;
+  position: relative;
+  z-index: 1;
+}
+
+.csf-bottom-left  { display: flex; align-items: center; flex: 1; }
+.csf-bottom-center { display: flex; align-items: center; justify-content: center; flex: 1; }
+.csf-bottom-right  { display: flex; align-items: center; justify-content: flex-end; flex: 1; }
+
+// ── Botón RETURN ─────────────────────────────────────────────
+.csf-return-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background:
+          linear-gradient(180deg, #1f2428 0%, #141618 100%);
+  border: 1px solid #2e3540;
+  border-bottom-color: #0e1114;
+  border-radius: 3px;
+  padding: 6px 14px 6px 10px;
+  cursor: pointer;
+  font-family: var(--csf-font);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--csf-text);
+  text-transform: uppercase;
+  box-shadow:
+          0 2px 0 rgba(0,0,0,0.6),
+          inset 0 1px 0 rgba(255,255,255,0.04);
+  transition: color 120ms, box-shadow 120ms, transform 80ms;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+                    180deg,
+                    rgba(0, 212, 255, 0.07) 0%,
+                    transparent 100%
+    );
+    opacity: 0;
+    transition: opacity 120ms;
+  }
+
+  &:hover {
+    color: var(--csf-accent);
+    border-color: rgba(0, 212, 255, 0.4);
+    box-shadow:
+            0 2px 0 rgba(0,0,0,0.6),
+            inset 0 1px 0 rgba(255,255,255,0.04),
+            0 0 12px rgba(0, 212, 255, 0.2);
+
+    &::before { opacity: 1; }
+
+    .csf-return-icon {
+      border-color: var(--csf-accent);
+      &::after { border-color: var(--csf-accent); }
+    }
+  }
+
+  &:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.6), inset 0 1px 0 rgba(0,0,0,0.2);
+  }
+}
+
+// ── Ícono flecha en CSS ──────────────────────────────────────
+.csf-return-icon {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-left:  2px solid var(--csf-text-dim);
+  border-bottom: 2px solid var(--csf-text-dim);
+  transform: rotate(45deg);
+  transition: border-color 120ms;
+  position: relative;
+  top: -1px;
+}
+
+// ── VU meter decorativo ──────────────────────────────────────
+.csf-vu-bar {
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+  height: 14px;
+}
+
+.csf-vu-seg {
+  display: block;
+  width: 3px;
+  border-radius: 1px;
+  background: var(--csf-accent);
+  opacity: 0.5;
+  animation: csf-vu 1.2s ease-in-out infinite alternate;
+
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) {
+      height: #{4 + random(10)}px;
+      animation-duration: #{0.8 + $i * 0.07}s;
+    }
+  }
+
+  .csf--powered-on & {
+    animation-play-state: running;
+  }
+}
+
+@keyframes csf-vu {
+  0%   { opacity: 0.25; transform: scaleY(0.3); }
+  100% { opacity: 0.7;  transform: scaleY(1); }
+}
