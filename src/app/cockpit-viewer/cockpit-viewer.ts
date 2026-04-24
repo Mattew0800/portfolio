@@ -9,11 +9,11 @@ import { LogScreen } from '../screens/log-screen/log-screen';
 import { MainScreen } from '../screens/main-screen/main-screen';
 import { ModalService } from '../services/modal.service';
 import { SkillsModalComponent } from '../modals/skills-modal/skills-modal';
-import { LogModalComponent } from '../modals/log-modal/log-modal';
 import { ProjectsComponent } from '../modals/projects-modal/projects-modal';
 import {AboutComponent} from "../modals/about-modal/about-modal";
 import {ContactComponent} from "../modals/contact-modal/contact-modal";
 import { ShipModalComponent } from '../modals/ship-modal-component/ship-modal-component';
+import {LogsModalComponent} from "../modals/logs-modal-component/logs-modal-component";
 
 @Component({
     selector: 'app-cockpit-viewer',
@@ -23,7 +23,7 @@ import { ShipModalComponent } from '../modals/ship-modal-component/ship-modal-co
         ProjectsComponent,
         SkillsModalComponent,
         ContactComponent,
-        LogModalComponent,
+        LogsModalComponent,
         AboutComponent,
         ShipModalComponent,
     ],
