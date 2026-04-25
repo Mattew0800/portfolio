@@ -91,8 +91,8 @@
 // Leyendas del plano
 .legend-left {
   position: absolute;
-  left: 100px;
-  top: 33%;
+  left: 260px;
+  top: 30%;
   transform: translateY(-50%);
   z-index: 15;
   display: flex;
@@ -110,12 +110,23 @@
 .legend-item {
   white-space: nowrap;
   text-shadow: 0 0 8px rgba(1, 241, 241, 0.2);
+
+  .module-number {
+    color: #d93f3f; // Rojo por defecto (no visitado)
+    font-weight: 600;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+
+    &.visited-number {
+      color: #10d969; // Verde cuando está visitado
+      text-shadow: 0 0 10px rgba(16, 217, 105, 0.7);
+    }
+  }
 }
 
 .legend-right {
   position: absolute;
   right: 400px;
-  top: 20%;
+  top: 42%;
   transform: translateY(-50%);
   z-index: 15;
   display: flex;

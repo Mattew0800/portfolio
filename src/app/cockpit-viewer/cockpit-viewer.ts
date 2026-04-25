@@ -604,6 +604,14 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                     console.log(`   🧹 Cockpit-Screen-Frame eliminado, solo contenido real para ${mesh.name}`);
                 }
             }
+            // Eliminar SVG decorativo de nave (solo para Plane_1)
+            if (mesh.name === 'Plane_1') {
+                const svgElement = hostElement.querySelector('svg');
+                if (svgElement) {
+                    svgElement.remove();
+                    console.log('   🗑️ SVG del plano eliminado para textura de Plane_1');
+                }
+            }
 
             // Crear canvas
             const canvas = document.createElement('canvas');

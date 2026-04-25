@@ -2,11 +2,10 @@
 <div class="ship-wrapper">
     <!-- Leyenda Izquierda -->
     <div class="legend-left">
-        <div class="legend-item">1. Home</div>
-        <div class="legend-item">2. Projects</div>
-        <div class="legend-item">3. Skills</div>
-        <div class="legend-item">4. About</div>
-        <div class="legend-item">5. Contact</div>
+        <div class="legend-item" *ngFor="let module of modules" [class.visited]="module.visited">
+            <span class="module-number" [class.visited-number]="module.visited">{{ module.number }}. </span>
+            <span>{{ module.label }}</span>
+        </div>
     </div>
 
     <!-- Plano Principal -->
