@@ -587,6 +587,24 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
 
         // Esperar a que el DOM se actualice y los estilos se apliquen
         setTimeout(() => {
+            if (mesh.name === 'Plane_1' || mesh.name === 'Plane_2') {
+                // Extraer solo el contenido real (ng-content) ignorando todo el marco
+                const frameElement = hostElement.querySelector('app-cockpit-screen-frame');
+                if (frameElement) {
+                    // Buscar el contenedor que aloja el contenido proyectado
+                    const contentContainer = frameElement.querySelector('.csf-content');
+                    if (contentContainer) {
+                        // Mover cada hijo del contenedor al host principal (fuera del frame)
+                        while (contentContainer.firstChild) {
+                            hostElement.appendChild(contentContainer.firstChild);
+                        }
+                    }
+                    // Eliminar el frame completo del DOM temporal
+                    frameElement.remove();
+                    console.log(`   🧹 Cockpit-Screen-Frame eliminado, solo contenido real para ${mesh.name}`);
+                }
+            }
+
             // Crear canvas
             const canvas = document.createElement('canvas');
             canvas.width = 2048;
@@ -616,8 +634,9 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                 const newMaterial = new THREE.MeshBasicMaterial({
                     map: texture,
                     side: THREE.DoubleSide,
-                    transparent: false,
-                    opacity: 1
+                    transparent: true,
+                    opacity: mesh.name === 'Plane_1' || mesh.name === 'Plane_2' ? 0.4 : 1,
+                    depthWrite: mesh.name === 'Plane_1' || mesh.name === 'Plane_2' ? false : true
                 });
 
                 // Dispose del material anterior si existe
