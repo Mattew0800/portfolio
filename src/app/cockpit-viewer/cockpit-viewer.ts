@@ -1,4 +1,7 @@
-import { Component, ElementRef, OnInit, ViewChild, OnDestroy, ApplicationRef, createComponent, EnvironmentInjector, Type } from '@angular/core';
+import {
+    Component, ElementRef, OnInit, ViewChild, OnDestroy, ApplicationRef, createComponent, EnvironmentInjector, Type,
+    NgZone
+} from '@angular/core';
 import { CommonModule, UpperCasePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import * as THREE from 'three';
@@ -72,11 +75,17 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
     private hoverTextures: Map<number, THREE.CanvasTexture> = new Map(); // Cache de texturas pre-renderizadas
     private isPreRenderingTextures: boolean = false;
 
+    private logScreenAnimFrame = 0;
+    private logScreenCanvas?: HTMLCanvasElement;
+    private logScreenTexture?: THREE.CanvasTexture;
+    private logScreenEntries: Array<{ text: string; status: 'ok' | 'pending'; addedAt: number }> = [];
     constructor(
         private appRef: ApplicationRef,
         private injector: EnvironmentInjector,
         private modalService: ModalService,
-        private router: Router
+        private router: Router,
+        private ngZone: NgZone
+
     ) {
         // Suscribirse a cambios del modal
         this.modalService.activeModal$.subscribe(modal => {
@@ -96,6 +105,11 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
         }
+
+        if (this.logScreenAnimFrame) {
+            cancelAnimationFrame(this.logScreenAnimFrame);
+        }
+
         if (this.debugInterval) {
             clearInterval(this.debugInterval);
         }
@@ -596,119 +610,54 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             if (mesh.name === 'Plane_2') {
                 this.cleanup(componentRef, hostElement);
 
-                // Canvas de baja resolución para ahorrar rendimiento
                 const w = 512;
-                const h = 1600;  // solo cambió la altura para que quepa todo
+                const h = 2048;
                 const canvas = document.createElement('canvas');
                 canvas.width = w;
                 canvas.height = h;
                 const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
 
-                // Fondo negro absoluto
-                ctx.fillStyle = '#000';
-                ctx.fillRect(0, 0, w, h);
+                // Guardar referencias
+                this.logScreenCanvas = canvas;
+                this.logScreenEntries = [];
 
-                // Colores del terminal
-                const green = '#00ff9c';
-                const gray = '#8b949e';
-                const grayDim = '#3d4450';
-                const textBright = '#e6edf3';
+// Precargar líneas de boot
+                const bootLines = [
+                    'Initializing core systems',
+                    'Loading navigation interface',
+                    'Mounting UI modules',
+                    'Establishing environment',
+                    'Verifying dependencies'
+                ];
+                bootLines.forEach((text, i) => {
+                    this.logScreenEntries.push({
+                        text,
+                        status: 'ok' as 'ok' | 'pending',
+                        addedAt: Date.now() - (bootLines.length - i) * 600
+                    });
+                });
 
-                const cx = w / 2; // centro horizontal
+// Precargar líneas de interaction (aparecerán después)
+                const interactionLines = [
+                    'Accessing module: HOME',
+                    'Loading component data',
+                    'Rendering interface',
+                    'Accessing module: PROJECTS',
+                    'Loading component data',
+                    'Rendering interface',
+                ];
+                interactionLines.forEach((text, i) => {
+                    // Aparecerán progresivamente en los próximos segundos
+                    setTimeout(() => {
+                        this.logScreenEntries.push({
+                            text,
+                            status: i % 3 === 1 ? 'pending' : 'ok',  // algunos pendientes
+                            addedAt: Date.now()
+                        });
+                    }, 3000 + i * 800);
+                });
 
-                // --- Topbar simulada ---
-                // "terminal" (gris oscuro) y un puntito verde a la derecha
-                ctx.fillStyle = grayDim;
-                ctx.fillRect(cx - 80, 50, 80, 8); // texto "terminal"
-                ctx.fillStyle = green;
-                ctx.beginPath();
-                ctx.arc(cx + 60, 54, 6, 0, Math.PI*2);
-                ctx.fill();
-                // línea separadora
-                ctx.strokeStyle = 'rgba(139, 148, 158, 0.15)';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(40, 80);
-                ctx.lineTo(w - 40, 80);
-                ctx.stroke();
-
-                // --- Sección Boot Sequence ---
-                ctx.fillStyle = grayDim;
-                ctx.fillRect(cx - 70, 110, 140, 7); // "BOOT SEQUENCE"
-                const logStartY = 140;
-                const logLineH = 30;
-                // 5 líneas de log simuladas con barra gris + OK verde
-                for (let i = 0; i < 5; i++) {
-                    const y = logStartY + i * logLineH;
-                    // flecha "→"
-                    ctx.fillStyle = grayDim;
-                    ctx.fillRect(cx - 90, y, 10, 6);
-                    // texto (barra gris de ancho variable)
-                    const textWidth = 100 + Math.sin(i * 1.5) * 20;
-                    ctx.fillStyle = gray;
-                    ctx.fillRect(cx - 60, y, textWidth, 6);
-                    // OK (verde)
-                    ctx.fillStyle = green;
-                    ctx.fillRect(cx + 70, y, 20, 6);
-                }
-
-                // --- Divisor ---
-                const divY = logStartY + 5 * logLineH + 20;
-                ctx.strokeStyle = 'rgba(139, 148, 158, 0.1)';
-                ctx.beginPath();
-                ctx.moveTo(60, divY);
-                ctx.lineTo(w - 60, divY);
-                ctx.stroke();
-
-                // --- Sección Interaction Logs ---
-                const interactionLabelY = divY + 30;
-                ctx.fillStyle = grayDim;
-                ctx.fillRect(cx - 80, interactionLabelY, 180, 7); // "INTERACTION LOGS"
-                const interactionStartY = interactionLabelY + 25;
-                const interactionLineH = 30;
-                // 15 líneas de interaction simuladas
-                for (let i = 0; i < 15; i++) {
-                    const y = interactionStartY + i * interactionLineH;
-                    // flecha "→"
-                    ctx.fillStyle = grayDim;
-                    ctx.fillRect(cx - 90, y, 10, 6);
-                    // texto (barra gris de ancho variable)
-                    const textWidth = 100 + Math.sin(i * 1.5) * 20;
-                    ctx.fillStyle = gray;
-                    ctx.fillRect(cx - 60, y, textWidth, 6);
-                    // OK (verde)
-                    ctx.fillStyle = green;
-                    ctx.fillRect(cx + 70, y, 20, 6);
-                }
-
-                // --- Divisor ---
-                const divY2 = interactionStartY + 15 * interactionLineH + 20;
-                ctx.strokeStyle = 'rgba(139, 148, 158, 0.1)';
-                ctx.beginPath();
-                ctx.moveTo(60, divY2);
-                ctx.lineTo(w - 60, divY2);
-                ctx.stroke();
-
-                // --- Bloque de identidad centrado ---
-                const idY = divY2 + 40;
-                // Nombre grande (blanco)
-                ctx.fillStyle = textBright;
-                ctx.fillRect(cx - 60, idY, 120, 18); // "MATI"
-                // Rol (gris)
-                ctx.fillStyle = gray;
-                ctx.fillRect(cx - 80, idY + 30, 160, 8);
-                // Stack (gris oscuro)
-                ctx.fillStyle = grayDim;
-                ctx.fillRect(cx - 90, idY + 50, 180, 7);
-
-                // --- System ready + cursor ---
-                const readyY = idY + 100;
-                ctx.fillStyle = green;
-                ctx.fillRect(cx - 70, readyY, 100, 7); // "System ready"
-                // cursor (rectángulo verde que simula el parpadeo)
-                ctx.fillRect(cx + 50, readyY - 2, 10, 12);
-
-                // Crear textura con filtro pixelado para mantener el estilo y ahorrar recursos
+                // Crear textura
                 const texture = new THREE.CanvasTexture(canvas);
                 texture.minFilter = THREE.NearestFilter;
                 texture.magFilter = THREE.NearestFilter;
@@ -718,6 +667,8 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                 texture.wrapT = THREE.ClampToEdgeWrapping;
                 texture.rotation = -Math.PI / 2;
                 texture.center.set(0.5, 0.5);
+
+                this.logScreenTexture = texture;
 
                 const newMaterial = new THREE.MeshBasicMaterial({
                     map: texture,
@@ -739,7 +690,31 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
 
                 this.screenCanvases.set(mesh.name, canvas);
                 this.screenTextures.set(mesh.name, texture);
-                console.log('✅ Textura ligera de terminal (estructura real) aplicada');
+
+                // Iniciar animación fuera de la zona de Angular
+                this.ngZone.runOutsideAngular(() => this.startLogScreenAnimation());
+                this.ngZone.runOutsideAngular(() => {
+                    setInterval(() => {
+                        const messages = [
+                            'Heartbeat OK',
+                            'Memory usage: 47%',
+                            'Connection active',
+                            'Cache cleared',
+                            'Checking for updates...'
+                        ];
+                        const msg = messages[Math.floor(Math.random() * messages.length)];
+                        this.logScreenEntries.push({
+                            text: msg,
+                            status: 'ok',
+                            addedAt: Date.now()
+                        });
+                        if (this.logScreenEntries.length > 100) {
+                            this.logScreenEntries = this.logScreenEntries.slice(-50);
+                        }
+                    }, 7000);
+                });
+
+                console.log('✅ Live log‑screen canvas started');
                 return;
             }
 
@@ -2162,5 +2137,137 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         this.camera.aspect = canvas.clientWidth / canvas.clientHeight;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    }
+
+    private startLogScreenAnimation(): void {
+        const draw = () => {
+            this.renderLogScreenCanvas();
+            this.logScreenAnimFrame = requestAnimationFrame(draw);
+        };
+        this.logScreenAnimFrame = requestAnimationFrame(draw);
+    }
+
+    private renderLogScreenCanvas(): void {
+        const canvas = this.logScreenCanvas;
+        const texture = this.logScreenTexture;
+        if (!canvas || !texture) return;
+
+        const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+        const w = canvas.width;
+        const h = canvas.height;
+
+        // Limpiar fondo
+        ctx.fillStyle = '#050505';
+        ctx.fillRect(0, 0, w, h);
+
+        // Colores
+        const green = '#00ff9c';
+        const gray = '#8b949e';
+        const grayDim = '#3d4450';
+        const textBright = '#e6edf3';
+        const cx = w / 2;
+
+        // ── Topbar ──
+        ctx.font = '10px monospace';
+        ctx.fillStyle = grayDim;
+        ctx.fillText('terminal', cx - 80, 55);
+        ctx.fillStyle = green;
+        ctx.beginPath();
+        ctx.arc(cx + 10, 51, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(139, 148, 158, 0.15)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(30, 70);
+        ctx.lineTo(w - 30, 70);
+        ctx.stroke();
+
+        // ── Sección Boot Sequence ──
+        ctx.font = '9px monospace';
+        ctx.fillStyle = grayDim;
+        ctx.fillText('BOOT SEQUENCE', cx - 70, 95);
+
+        const lineH = 22;
+        const now = Date.now();
+        // Solo mostramos las últimas 20 entradas para no saturar
+        const maxVisible = 20;
+        const entries = this.logScreenEntries;
+        const visible = entries.slice(-maxVisible);
+        let y = 115;
+
+        visible.forEach((entry, i) => {
+            const age = now - entry.addedAt;
+
+            // Opacidad y slide para entradas nuevas
+            let alpha = 1;
+            let offsetY = 0;
+            if (age < 300) {
+                alpha = age / 300;
+                offsetY = (1 - alpha) * 8;
+            }
+
+            ctx.globalAlpha = alpha * 0.8;
+
+            // Flecha
+            ctx.font = '11px monospace';
+            ctx.fillStyle = grayDim;
+            ctx.fillText('→', cx - 100, y + offsetY);
+
+            // Texto del log
+            ctx.fillStyle = gray;
+            ctx.fillText(entry.text, cx - 80, y + offsetY);
+
+            // Estado
+            ctx.font = '10px monospace';
+            if (entry.status === 'ok') {
+                ctx.fillStyle = green;
+                ctx.fillText('OK', cx + 80, y + offsetY);
+            } else {
+                ctx.fillStyle = grayDim;
+                ctx.fillText('...', cx + 80, y + offsetY);
+            }
+
+            y += lineH;
+            ctx.globalAlpha = 1;
+        });
+
+        // ── Divisor ──
+        y += 10;
+        ctx.strokeStyle = 'rgba(139, 148, 158, 0.1)';
+        ctx.beginPath();
+        ctx.moveTo(40, y);
+        ctx.lineTo(w - 40, y);
+        ctx.stroke();
+
+        // ── Identidad ──
+        y += 40;
+        ctx.fillStyle = textBright;
+        ctx.font = 'bold 24px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('MATI', cx, y);
+        ctx.textAlign = 'left';
+
+        y += 35;
+        ctx.fillStyle = gray;
+        ctx.font = '12px monospace';
+        ctx.fillText('Frontend Developer', cx - 90, y);
+
+        y += 20;
+        ctx.fillStyle = grayDim;
+        ctx.font = '11px monospace';
+        ctx.fillText('Angular / TypeScript / CSS', cx - 100, y);
+
+        // ── System ready + cursor ──
+        y += 40;
+        ctx.fillStyle = green;
+        ctx.font = '11px monospace';
+        ctx.fillText('System ready', cx - 60, y);
+        const blink = Math.floor(now / 500) % 2 === 0;
+        if (blink) {
+            ctx.fillStyle = green;
+            ctx.fillRect(cx + 40, y - 10, 8, 12);
+        }
+
+        texture.needsUpdate = true;
     }
 }
