@@ -611,14 +611,47 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                     styleEl = document.createElement('style');
                     styleEl.id = styleId;
                     styleEl.innerHTML = `
-            .boot-log__text { font-size: 28px !important; }
-            .boot-log__status { font-size: 24px !important; }
-            .boot-panel__topbar-label { font-size: 26px !important; }
-            .boot-panel__section-label { font-size: 24px !important; }
-            .boot-identity__name { font-size: 60px !important; }
-            .boot-identity__role { font-size: 30px !important; }
-            .boot-identity__stack { font-size: 28px !important; }
-            .boot-ready__text { font-size: 26px !important; }
+                    app-cockpit-screen-frame,
+                    .csf-outer,
+                    .csf-bezel,
+                    .csf-status-bar,
+                    .csf-bottom-panel,
+                    .csf-corner,
+                    .csf-return-btn {
+                        background: transparent !important;
+                        border: none !important;
+                        box-shadow: none !important;
+                        padding: 0 !important;
+                        margin: 0 !important;
+                    }
+                
+                    /* Eliminar pseudo-elementos y capas decorativas */
+                    app-cockpit-screen-frame::before,
+                    app-cockpit-screen-frame::after,
+                    .csf-bezel::before,
+                    .csf-bezel::after,
+                    .csf-screen::after,
+                    .csf-scanlines,
+                    .csf-vignette,
+                    .csf-power-overlay {
+                        display: none !important;
+                    }
+                
+                    /* Quitar sombra interna de la pantalla */
+                    .csf-screen {
+                        box-shadow: none !important;
+                    }
+                
+                    /* === AGRANDAR FUENTES PARA LEGIBILIDAD === */
+                    .boot-log__text { font-size: 28px !important; }
+                    .boot-log__status { font-size: 24px !important; }
+                    .boot-panel__topbar-label { font-size: 26px !important; }
+                    .boot-panel__section-label { font-size: 24px !important; }
+                    .boot-identity__name { font-size: 60px !important; }
+                    .boot-identity__role { font-size: 30px !important; }
+                    .boot-identity__stack { font-size: 28px !important; }
+                    .boot-ready__text { font-size: 26px !important; }
+
         `;
                     hostElement.appendChild(styleEl);
                 }
