@@ -621,7 +621,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                 this.logScreenCanvas = canvas;
                 this.logScreenEntries = [];
 
-// Precargar líneas de boot
+                // Precargar líneas de boot
                 const bootLines = [
                     'Initializing core systems',
                     'Loading navigation interface',
@@ -673,9 +673,9 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                 const newMaterial = new THREE.MeshBasicMaterial({
                     map: texture,
                     side: THREE.DoubleSide,
-                    transparent: true,
-                    opacity: 0.4,
-                    depthWrite: false
+                    transparent: false,   // ← opaco
+                    opacity: 1,           // ← total
+                    depthWrite: true      // ← evita artefactos de profundidad
                 });
 
                 if (mesh.material) {
@@ -2157,7 +2157,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         const h = canvas.height;
 
         // Limpiar fondo
-        ctx.fillStyle = '#050505';
+        ctx.fillStyle = '#000000';   // antes #050505
         ctx.fillRect(0, 0, w, h);
 
         // Colores
