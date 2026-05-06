@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter, Subject, takeUntil } from 'rxjs';
@@ -41,6 +41,8 @@ export class LogScreen implements OnInit, OnDestroy {
     showIdentity = false;
     showReady    = false;
 
+    @ViewChild('bootScreen') bootScreenElement?: ElementRef<HTMLDivElement>;
+
     private bootEntryId = 0;
     private interactionEntryId = 0;
     private destroy$ = new Subject<void>();
@@ -67,11 +69,26 @@ export class LogScreen implements OnInit, OnDestroy {
 
         this.subscribeToNavigation();
         this.subscribeToLogUpdates();
+
+        // Scroll al bottom cuando se ingresa a la screen (después de un pequeño delay para asegurar que el DOM esté actualizado)
+        setTimeout(() => this.scrollToBottom(), 100);
     }
 
     ngOnDestroy(): void {
         this.destroy$.next();
         this.destroy$.complete();
+    }
+
+
+    private scrollToBottom(): void {
+        try {
+            if (this.bootScreenElement?.nativeElement) {
+                const element = this.bootScreenElement.nativeElement;
+                element.scrollTop = element.scrollHeight;
+            }
+        } catch (err) {
+            // Silently fail if scrolling is not possible
+        }
     }
 
     // ── Boot sequence ───────────────────────────────────────────────
