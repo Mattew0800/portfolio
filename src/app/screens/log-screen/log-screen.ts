@@ -4,13 +4,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter, Subject, takeUntil } from 'rxjs';
 import { CockpitScreenFrameComponent } from '../../components/cockpit-screen-frame/cockpit-screen-frame';
 import { ModalService } from '../../services/modal.service';
-import { ModuleStateService } from '../../services/module-state.service';
-
-interface BootEntry {
-    id:      number;
-    text:    string;
-    status:  'pending' | 'ok' | null;
-}
+import { ModuleStateService, BootEntry } from '../../services/module-state.service';
 
 @Component({
     selector: 'app-log-screen',
@@ -38,12 +32,17 @@ export class LogScreen implements OnInit, OnDestroy {
     private readonly STEP_DELAY   = 380;
     // Delay between "pending" → "ok" resolve
     private readonly RESOLVE_DELAY = 260;
+    // Maximum number of log entries for each section
+    private readonly MAX_BOOT_ENTRIES = 5;
+    private readonly MAX_INTERACTION_ENTRIES = 7;
 
-    visibleEntries: BootEntry[] = [];
+    bootEntries: BootEntry[] = [];
+    interactionEntries: BootEntry[] = [];
     showIdentity = false;
     showReady    = false;
 
-    private entryId  = 0;
+    private bootEntryId = 0;
+    private interactionEntryId = 0;
     private destroy$ = new Subject<void>();
 
     constructor(
@@ -54,8 +53,20 @@ export class LogScreen implements OnInit, OnDestroy {
     ) {}
 
     ngOnInit(): void {
-        this.runBootSequence();
+        // Check if this is the first visit
+        const isFirstVisit = this.moduleStateService.getIsFirstVisit();
+
+        if (isFirstVisit) {
+            // First visit: run boot sequence
+            this.runBootSequence();
+            this.moduleStateService.setIsFirstVisit(false);
+        } else {
+            // Subsequent visits: restore from saved state
+            this.restoreLogState();
+        }
+
         this.subscribeToNavigation();
+        this.subscribeToLogUpdates();
     }
 
     ngOnDestroy(): void {
@@ -81,19 +92,86 @@ export class LogScreen implements OnInit, OnDestroy {
         });
 
         const totalTime = this.BOOT_STEPS.length * this.STEP_DELAY + this.RESOLVE_DELAY;
-        setTimeout(() => { this.showIdentity = true; this.cdr.markForCheck(); }, totalTime + 200);
-        setTimeout(() => { this.showReady    = true; this.cdr.markForCheck(); }, totalTime + 750);
+        setTimeout(() => {
+            this.showIdentity = true;
+            this.moduleStateService.setShowIdentity(true);
+            this.cdr.markForCheck();
+        }, totalTime + 200);
+        setTimeout(() => {
+            this.showReady    = true;
+            this.moduleStateService.setShowReady(true);
+            this.saveLogState();
+            this.cdr.markForCheck();
+        }, totalTime + 750);
     }
 
-    private addEntry(text: string, status: BootEntry['status']): void {
-        this.visibleEntries.push({ id: this.entryId++, text, status });
+    private addEntry(text: string, status: BootEntry['status'], type: 'boot' | 'interaction' = 'boot'): void {
+        const entry = type === 'boot'
+            ? { id: this.bootEntryId++, text, status }
+            : { id: this.interactionEntryId++, text, status };
+
+        if (type === 'boot') {
+            this.bootEntries.push(entry);
+            this.trimBootEntries();
+        } else {
+            this.interactionEntries.push(entry);
+            this.trimInteractionEntries();
+        }
+
         this.cdr.markForCheck();
     }
 
-    private resolveLastEntry(): void {
-        const last = this.visibleEntries[this.visibleEntries.length - 1];
+    private resolveLastEntry(type: 'boot' | 'interaction' = 'boot'): void {
+        const entries = type === 'boot' ? this.bootEntries : this.interactionEntries;
+        const last = entries[entries.length - 1];
         if (last) { last.status = 'ok'; }
         this.cdr.markForCheck();
+    }
+
+    private trimBootEntries(): void {
+        if (this.bootEntries.length > this.MAX_BOOT_ENTRIES) {
+            this.bootEntries = this.bootEntries.slice(-this.MAX_BOOT_ENTRIES);
+        }
+    }
+
+    private trimInteractionEntries(): void {
+        if (this.interactionEntries.length > this.MAX_INTERACTION_ENTRIES) {
+            this.interactionEntries = this.interactionEntries.slice(-this.MAX_INTERACTION_ENTRIES);
+        }
+    }
+
+    // ── State management ────────────────────────────────────────────
+    private saveLogState(): void {
+        this.moduleStateService.setBootLogHistory([...this.bootEntries]);
+        this.moduleStateService.setInteractionLogHistory([...this.interactionEntries]);
+        this.moduleStateService.setShowIdentity(this.showIdentity);
+        this.moduleStateService.setShowReady(this.showReady);
+    }
+
+    private restoreLogState(): void {
+        this.bootEntries = [...this.moduleStateService.getBootLogHistory()];
+        this.interactionEntries = [...this.moduleStateService.getInteractionLogHistory()];
+        this.showIdentity = this.moduleStateService.getShowIdentity();
+        this.showReady = this.moduleStateService.getShowReady();
+        this.bootEntryId = Math.max(0, ...this.bootEntries.map(e => e.id), this.bootEntryId) + 1;
+        this.interactionEntryId = Math.max(0, ...this.interactionEntries.map(e => e.id), this.interactionEntryId) + 1;
+        this.cdr.markForCheck();
+    }
+
+    private subscribeToLogUpdates(): void {
+        this.moduleStateService.bootLogHistory$
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((entries) => {
+                this.bootEntries = [...entries];
+                this.cdr.markForCheck();
+            });
+
+        this.moduleStateService.interactionLogHistory$
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((entries) => {
+                this.interactionEntries = [...entries];
+                this.cdr.markForCheck();
+            });
     }
 
     // ── Navigation logs ─────────────────────────────────────────────
@@ -122,17 +200,21 @@ export class LogScreen implements OnInit, OnDestroy {
             'Loading component data',
             'Rendering interface',
         ];
-        // Reset identity on new nav
+        // Reset ready on new nav
         this.showReady = false;
         this.cdr.markForCheck();
 
         steps.forEach((text, i) => {
-            setTimeout(() => this.addEntry(text, 'pending'),           i * this.STEP_DELAY);
-            setTimeout(() => this.resolveLastEntry(), i * this.STEP_DELAY + this.RESOLVE_DELAY);
+            setTimeout(() => this.addEntry(text, 'pending', 'interaction'),           i * this.STEP_DELAY);
+            setTimeout(() => this.resolveLastEntry('interaction'), i * this.STEP_DELAY + this.RESOLVE_DELAY);
         });
 
         const done = steps.length * this.STEP_DELAY + this.RESOLVE_DELAY;
-        setTimeout(() => { this.showReady = true; this.cdr.markForCheck(); }, done + 300);
+        setTimeout(() => {
+            this.showReady = true;
+            this.saveLogState();
+            this.cdr.markForCheck();
+        }, done + 300);
     }
 
     onBack(): void {

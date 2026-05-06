@@ -132,6 +132,13 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     }
 
     openLink(url: string): void {
+        // Registrar acción en el log
+        let linkType = 'PROJECT LINK';
+        if (url.includes('github')) linkType = 'Source Code (GitHub)';
+        else if (url.includes('demo')) linkType = 'Live Demo';
+
+        this.modalService.logInteractionAction(`Viewing: ${linkType}`);
+
         window.open(url, '_blank', 'noopener,noreferrer');
     }
 }

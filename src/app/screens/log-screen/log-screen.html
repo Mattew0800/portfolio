@@ -7,10 +7,11 @@
                 <span class="boot-panel__topbar-dot"></span>
             </div>
 
+            <!-- ── Boot Sequence Section ────────────────────── -->
             <p class="boot-panel__section-label">Boot Sequence</p>
 
             <ol class="boot-logs" aria-label="Boot sequence log">
-                @for (entry of visibleEntries; track entry.id) {
+                @for (entry of bootEntries; track entry.id) {
                     <li class="boot-log">
                         <span class="boot-log__arrow" aria-hidden="true">→</span>
                         <span class="boot-log__text">{{ entry.text }}</span>
@@ -23,7 +24,7 @@
                 }
             </ol>
 
-            @if (showIdentity) {
+            @if (showIdentity && interactionEntries.length === 0) {
                 <div class="boot-divider" aria-hidden="true"></div>
 
                 <div class="boot-identity" aria-label="Developer identity">
@@ -38,6 +39,27 @@
                         <span class="boot-ready__cursor" aria-hidden="true"></span>
                     </div>
                 }
+            }
+
+            <!-- ── Interaction Logs Section ────────────────── -->
+            @if (interactionEntries.length > 0) {
+                <div class="boot-divider" aria-hidden="true"></div>
+
+                <p class="boot-panel__section-label">Interaction Logs</p>
+
+                <ol class="boot-logs" aria-label="Interaction logs">
+                    @for (entry of interactionEntries; track entry.id) {
+                        <li class="boot-log">
+                            <span class="boot-log__arrow" aria-hidden="true">→</span>
+                            <span class="boot-log__text">{{ entry.text }}</span>
+                            @if (entry.status === 'ok') {
+                                <span class="boot-log__status" aria-label="OK">OK</span>
+                            } @else if (entry.status === 'pending') {
+                                <span class="boot-log__pending" aria-hidden="true">...</span>
+                            }
+                        </li>
+                    }
+                </ol>
             }
 
         </div>

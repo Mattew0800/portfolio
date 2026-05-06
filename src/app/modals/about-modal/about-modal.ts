@@ -105,6 +105,9 @@ aprender nuevas tecnologías y resolver problemas reales.`;
     }
 
     downloadCV(): void {
+        // Registrar acción en el log
+        this.modalService.logDownloadAction(this.CV_NAME);
+
         const a = document.createElement('a');
         a.href     = this.CV_URL;
         a.download = this.CV_NAME;
@@ -112,6 +115,13 @@ aprender nuevas tecnologías y resolver problemas reales.`;
     }
 
     openLink(url: string): void {
+        // Registrar acción en el log
+        let linkType = 'EXTERNAL LINK';
+        if (url.includes('github')) linkType = 'GitHub';
+        else if (url.includes('linkedin')) linkType = 'LinkedIn';
+
+        this.modalService.logInteractionAction(`Opening: ${linkType}`);
+
         window.open(url, '_blank', 'noopener,noreferrer');
     }
 }

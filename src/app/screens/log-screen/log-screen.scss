@@ -31,32 +31,29 @@ $font: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  // Scrollbar estilo industrial (consistente con cockpit-screen-frame)
+  scrollbar-width: thin;
+  scrollbar-color: #2a3a44 transparent;
+
+  &::-webkit-scrollbar       { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb {
+    background: #2a3a44;
+    border-radius: 2px;
+    &:hover { background: #00d4ff; }
+  }
 }
 
 // ── Panel ────────────────────────────────────────────────────────
 .boot-panel {
   width: 100%;
   max-width: 580px;
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
-
-  // Scrollbar estilo industrial
-  scrollbar-width: thin;
-  scrollbar-color: #3d4450 transparent;
-
-  &::-webkit-scrollbar       { width: 6px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb {
-    background: #3d4450;
-    border-radius: 2px;
-    &:hover { background: $green; }
-  }
 
   // Top bar — minimal, purely structural
   &__topbar {
@@ -64,7 +61,7 @@ $font: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 40px;
-    padding-bottom: 16px;
+    padding: 0 24px 16px;
     border-bottom: 1px solid $border;
     width: 100%;
     flex-shrink: 0;
@@ -91,7 +88,9 @@ $font: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
     color: $gray-dim;
     text-transform: uppercase;
     margin-bottom: 28px;
-    width: 100%;
+    margin-left: 24px;
+    margin-right: 24px;
+    width: calc(100% - 48px);
     flex-shrink: 0;
   }
 }
@@ -99,11 +98,12 @@ $font: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 // ── Log lines ────────────────────────────────────────────────────
 .boot-logs {
   list-style: none;
-  padding: 0;
+  padding: 0 24px;
   margin: 0;
   display: flex;
   flex-direction: column;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .boot-log {
@@ -148,10 +148,10 @@ $font: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 
 // ── Divider ──────────────────────────────────────────────────────
 .boot-divider {
-  width: 100%;
+  width: calc(100% - 48px);
   height: 1px;
   background: $border;
-  margin: 32px 0;
+  margin: 32px 24px;
   animation: fadein 0.4s ease forwards;
   flex-shrink: 0;
 }
@@ -160,6 +160,10 @@ $font: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 .boot-identity {
   animation: fadein 0.6s ease forwards;
   flex-shrink: 0;
+  padding: 0 24px;
+  width: calc(100% - 48px);
+  box-sizing: border-box;
+  text-align: center;
 
   &__name {
     font-size: clamp(22px, 5vw, 30px);
@@ -194,8 +198,10 @@ $font: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 .boot-ready {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   margin-top: 32px;
+  padding: 0 24px;
   animation: fadein 0.4s ease forwards;
 
   &__text {

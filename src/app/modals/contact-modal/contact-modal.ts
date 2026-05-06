@@ -104,6 +104,9 @@ export class ContactComponent {
 
         this.formState = 'sending';
 
+        // Registrar envío de formulario en el log
+        this.modalService.logInteractionAction('Form submitted: Contact message');
+
         // Simulación de envío — reemplazá con tu servicio real
         setTimeout(() => {
             this.formState = 'sent';
@@ -119,6 +122,9 @@ export class ContactComponent {
     // ─── LINKS ───────────────────────────────────────────────────────────────
 
     openChannel(ch: ContactChannel): void {
+        // Registrar acción en el log
+        this.modalService.logInteractionAction(`Opening: ${ch.label}`);
+
         window.open(ch.url, '_blank', 'noopener,noreferrer');
     }
 
