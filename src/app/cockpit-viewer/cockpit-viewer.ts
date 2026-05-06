@@ -291,6 +291,8 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             }
         });
 
+
+
         console.log('✅ Contenido de pantallas configurado');
 
         // Verificar si todo está listo
@@ -587,101 +589,188 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
 
         // Esperar a que el DOM se actualice y los estilos se apliquen
         setTimeout(() => {
+            // ------------------------------------------
+            // PLANE_2 (Log Screen): captura con tamaño lógico fijo y escalado
+            // ------------------------------------------
+            if (mesh.name === 'Plane_2') {
+                // 1. Ocultar el aspecto del cockpit-screen-frame sin quitarlo
+                const frame = hostElement.querySelector('app-cockpit-screen-frame') as HTMLElement;
+                if (frame) {
+                    frame.style.background = '#050505';      // fondo negro
+                    frame.style.border = 'none';
+                    frame.style.boxShadow = 'none';
+                    frame.style.padding = '0';
+                    frame.style.margin = '0';
+                    // Elimina también los pseudo-elementos si es necesario (se hará en el canvas al capturar)
+                }
+
+                // 2. Agrandar las fuentes del log-screen inyectando un <style>
+                const styleId = 'log-screen-3d-scale';
+                let styleEl = hostElement.querySelector(`#${styleId}`);
+                if (!styleEl) {
+                    styleEl = document.createElement('style');
+                    styleEl.id = styleId;
+                    styleEl.innerHTML = `
+            .boot-log__text { font-size: 28px !important; }
+            .boot-log__status { font-size: 24px !important; }
+            .boot-panel__topbar-label { font-size: 26px !important; }
+            .boot-panel__section-label { font-size: 24px !important; }
+            .boot-identity__name { font-size: 60px !important; }
+            .boot-identity__role { font-size: 30px !important; }
+            .boot-identity__stack { font-size: 28px !important; }
+            .boot-ready__text { font-size: 26px !important; }
+        `;
+                    hostElement.appendChild(styleEl);
+                }
+
+                // 3. Tamaño lógico: exactamente el que usa log-screen (580px de ancho) y alto suficiente
+                const logicalWidth = 580;
+                const logicalHeight = 1400;  // mayor para que quepa todo el contenido
+                hostElement.style.width = logicalWidth + 'px';
+                hostElement.style.height = logicalHeight + 'px';
+                hostElement.style.overflow = 'visible';
+
+                // 4. Capturar con html2canvas a escala 1 (canvas resultante 580x1400)
+                html2canvas(hostElement, {
+                    width: logicalWidth,
+                    height: logicalHeight,
+                    scale: 1,
+                    backgroundColor: '#050505',
+                    logging: false,
+                    useCORS: true,
+                    allowTaint: true
+                }).then(smallCanvas => {
+                    // 5. Escalar el canvas pequeño a 2048px de ancho para la textura final
+                    const targetWidth = 2048;
+                    const scaleUp = targetWidth / smallCanvas.width;
+                    const finalCanvas = document.createElement('canvas');
+                    finalCanvas.width = targetWidth;
+                    finalCanvas.height = smallCanvas.height * scaleUp;
+                    const finalCtx = finalCanvas.getContext('2d', { willReadFrequently: true })!;
+                    finalCtx.imageSmoothingEnabled = true;
+                    finalCtx.drawImage(smallCanvas, 0, 0, finalCanvas.width, finalCanvas.height);
+
+                    // 6. Crear textura y material
+                    const texture = new THREE.CanvasTexture(finalCanvas);
+                    texture.minFilter = THREE.LinearFilter;
+                    texture.magFilter = THREE.LinearFilter;
+                    texture.needsUpdate = true;
+                    texture.flipY = true;
+                    texture.wrapS = THREE.ClampToEdgeWrapping;
+                    texture.wrapT = THREE.ClampToEdgeWrapping;
+                    texture.rotation = -Math.PI / 2;
+                    texture.center.set(0.5, 0.5);
+
+                    const newMaterial = new THREE.MeshBasicMaterial({
+                        map: texture,
+                        side: THREE.DoubleSide,
+                        transparent: true,
+                        opacity: 0.4,
+                        depthWrite: false
+                    });
+
+                    if (mesh.material) {
+                        if (Array.isArray(mesh.material)) mesh.material.forEach(m => m.dispose());
+                        else mesh.material.dispose();
+                    }
+                    mesh.material = newMaterial;
+                    mesh.material.needsUpdate = true;
+                    mesh.visible = true;
+                    mesh.frustumCulled = false;
+                    mesh.renderOrder = 999;
+
+                    this.screenCanvases.set(mesh.name, finalCanvas);
+                    this.screenTextures.set(mesh.name, texture);
+                    this.cleanup(componentRef, hostElement);
+                    console.log('✅ Textura log‑screen generada: sin borde, texto enorme y nítido');
+                }).catch(err => {
+                    console.error('❌ Error capturando log‑screen:', err);
+                    this.cleanup(componentRef, hostElement);
+                });
+                return;
+            }
+
+            // ------------------------------------------
+            // ELIMINACIÓN DE FRAMES Y SVG (Plane_1 solía tener un SVG)
+            // ------------------------------------------
             if (mesh.name === 'Plane_1' || mesh.name === 'Plane_2') {
-                // Extraer solo el contenido real (ng-content) ignorando todo el marco
                 const frameElement = hostElement.querySelector('app-cockpit-screen-frame');
                 if (frameElement) {
-                    // Buscar el contenedor que aloja el contenido proyectado
                     const contentContainer = frameElement.querySelector('.csf-content');
                     if (contentContainer) {
-                        // Mover cada hijo del contenedor al host principal (fuera del frame)
                         while (contentContainer.firstChild) {
                             hostElement.appendChild(contentContainer.firstChild);
                         }
                     }
-                    // Eliminar el frame completo del DOM temporal
                     frameElement.remove();
-                    console.log(`   🧹 Cockpit-Screen-Frame eliminado, solo contenido real para ${mesh.name}`);
                 }
             }
-            // Eliminar SVG decorativo de nave (solo para Plane_1)
             if (mesh.name === 'Plane_1') {
                 const svgElement = hostElement.querySelector('svg');
                 if (svgElement) {
                     svgElement.remove();
-                    console.log('   🗑️ SVG del plano eliminado para textura de Plane_1');
+                    console.log('🗑️ SVG eliminado para Plane_1');
                 }
             }
 
-            // Crear canvas
+            // ------------------------------------------
+            // FLUJO ORIGINAL PARA LAS DEMÁS PANTALLAS
+            // ------------------------------------------
             const canvas = document.createElement('canvas');
             canvas.width = 2048;
             canvas.height = 2048;
             const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
             if (!ctx) {
-                console.error('   ❌ No se pudo obtener contexto 2D');
                 this.cleanup(componentRef, hostElement);
                 return;
             }
 
-            // Renderizar el componente a canvas usando html2canvas
-            this.renderDOMToCanvasSimple(hostElement, canvas, ctx).then(() => {
-                // Crear textura del canvas
-                const texture = new THREE.CanvasTexture(canvas);
-                texture.minFilter = THREE.LinearFilter;
-                texture.magFilter = THREE.LinearFilter;
-                texture.needsUpdate = true;
-                texture.flipY = true;
-                texture.wrapS = THREE.ClampToEdgeWrapping;
-                texture.wrapT = THREE.ClampToEdgeWrapping;
-                texture.rotation = -Math.PI / 2;
-                texture.center.set(0.5, 0.5);
+            this.renderDOMToCanvasSimple(hostElement, canvas, ctx)
+                .then(() => {
+                    const texture = new THREE.CanvasTexture(canvas);
+                    texture.minFilter = THREE.LinearFilter;
+                    texture.magFilter = THREE.LinearFilter;
+                    texture.needsUpdate = true;
+                    texture.flipY = true;
+                    texture.wrapS = THREE.ClampToEdgeWrapping;
+                    texture.wrapT = THREE.ClampToEdgeWrapping;
+                    texture.rotation = -Math.PI / 2;
+                    texture.center.set(0.5, 0.5);
 
-                // Crear y aplicar material
-                const newMaterial = new THREE.MeshBasicMaterial({
-                    map: texture,
-                    side: THREE.DoubleSide,
-                    transparent: true,
-                    opacity: mesh.name === 'Plane_1' || mesh.name === 'Plane_2' ? 0.4 : 1,
-                    depthWrite: mesh.name === 'Plane_1' || mesh.name === 'Plane_2' ? false : true
+                    const newMaterial = new THREE.MeshBasicMaterial({
+                        map: texture,
+                        side: THREE.DoubleSide,
+                        transparent: true,
+                        opacity: mesh.name === 'Plane_1' ? 0.4 : 1,
+                        depthWrite: mesh.name === 'Plane_1' ? false : true
+                    });
+
+                    if (mesh.material) {
+                        if (Array.isArray(mesh.material)) mesh.material.forEach(m => m.dispose());
+                        else mesh.material.dispose();
+                    }
+                    mesh.material = newMaterial;
+                    mesh.material.needsUpdate = true;
+                    mesh.visible = true;
+                    mesh.frustumCulled = false;
+                    mesh.renderOrder = 999;
+
+                    this.screenCanvases.set(mesh.name, canvas);
+                    this.screenTextures.set(mesh.name, texture);
+                    if (mesh.name === 'Plane_3') {
+                        this.hoverTextures.set(-1, texture);
+                    }
+                    console.log(`✅ Textura generada para ${mesh.name}`);
+
+                    setTimeout(() => {
+                        this.cleanup(componentRef, hostElement);
+                    }, 100);
+                })
+                .catch(error => {
+                    console.error('❌ Error al renderizar componente:', error);
+                    this.cleanup(componentRef, hostElement);
                 });
 
-                // Dispose del material anterior si existe
-                if (mesh.material) {
-                    if (Array.isArray(mesh.material)) {
-                        mesh.material.forEach(mat => mat.dispose());
-                    } else {
-                        mesh.material.dispose();
-                    }
-                }
-
-                // Asignar nuevo material
-                mesh.material = newMaterial;
-                mesh.material.needsUpdate = true;
-                mesh.visible = true;
-                mesh.frustumCulled = false;
-                mesh.renderOrder = 999;
-
-                // Guardar referencias
-                this.screenCanvases.set(mesh.name, canvas);
-                this.screenTextures.set(mesh.name, texture);
-
-                if (mesh.name === 'Plane_3') {
-                    this.hoverTextures.set(-1, texture);
-                    console.log(`   ✅ Textura de MainScreen guardada como base (índice -1)`);
-                }
-
-                console.log(`   ✅ Textura creada y aplicada desde componente a ${mesh.name}`);
-
-                // Limpiar DESPUÉS de un pequeño delay para asegurar que la textura se aplicó
-                setTimeout(() => {
-                    this.cleanup(componentRef, hostElement);
-                }, 100);
-            }).catch(error => {
-                console.error('   ❌ Error al renderizar componente a canvas:', error);
-                this.cleanup(componentRef, hostElement);
-            });
         }, 500);
     }
 
