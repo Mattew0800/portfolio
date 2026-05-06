@@ -592,134 +592,154 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             // ------------------------------------------
             // PLANE_2 (Log Screen): captura con tamaño lógico fijo y escalado
             // ------------------------------------------
+                // Limpiamos el componente que no usaremos
             if (mesh.name === 'Plane_2') {
-                // 1. Ocultar el aspecto del cockpit-screen-frame sin quitarlo
-                const frame = hostElement.querySelector('app-cockpit-screen-frame') as HTMLElement;
-                if (frame) {
-                    frame.style.background = '#050505';      // fondo negro
-                    frame.style.border = 'none';
-                    frame.style.boxShadow = 'none';
-                    frame.style.padding = '0';
-                    frame.style.margin = '0';
-                    // Elimina también los pseudo-elementos si es necesario (se hará en el canvas al capturar)
+                this.cleanup(componentRef, hostElement);
+
+                // Canvas de baja resolución para ahorrar rendimiento
+                const w = 512;
+                const h = 1600;  // solo cambió la altura para que quepa todo
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+
+                // Fondo negro absoluto
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, w, h);
+
+                // Colores del terminal
+                const green = '#00ff9c';
+                const gray = '#8b949e';
+                const grayDim = '#3d4450';
+                const textBright = '#e6edf3';
+
+                const cx = w / 2; // centro horizontal
+
+                // --- Topbar simulada ---
+                // "terminal" (gris oscuro) y un puntito verde a la derecha
+                ctx.fillStyle = grayDim;
+                ctx.fillRect(cx - 80, 50, 80, 8); // texto "terminal"
+                ctx.fillStyle = green;
+                ctx.beginPath();
+                ctx.arc(cx + 60, 54, 6, 0, Math.PI*2);
+                ctx.fill();
+                // línea separadora
+                ctx.strokeStyle = 'rgba(139, 148, 158, 0.15)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(40, 80);
+                ctx.lineTo(w - 40, 80);
+                ctx.stroke();
+
+                // --- Sección Boot Sequence ---
+                ctx.fillStyle = grayDim;
+                ctx.fillRect(cx - 70, 110, 140, 7); // "BOOT SEQUENCE"
+                const logStartY = 140;
+                const logLineH = 30;
+                // 5 líneas de log simuladas con barra gris + OK verde
+                for (let i = 0; i < 5; i++) {
+                    const y = logStartY + i * logLineH;
+                    // flecha "→"
+                    ctx.fillStyle = grayDim;
+                    ctx.fillRect(cx - 90, y, 10, 6);
+                    // texto (barra gris de ancho variable)
+                    const textWidth = 100 + Math.sin(i * 1.5) * 20;
+                    ctx.fillStyle = gray;
+                    ctx.fillRect(cx - 60, y, textWidth, 6);
+                    // OK (verde)
+                    ctx.fillStyle = green;
+                    ctx.fillRect(cx + 70, y, 20, 6);
                 }
 
-                // 2. Agrandar las fuentes del log-screen inyectando un <style>
-                const styleId = 'log-screen-3d-scale';
-                let styleEl = hostElement.querySelector(`#${styleId}`);
-                if (!styleEl) {
-                    styleEl = document.createElement('style');
-                    styleEl.id = styleId;
-                    styleEl.innerHTML = `
-                    app-cockpit-screen-frame,
-                    .csf-outer,
-                    .csf-bezel,
-                    .csf-status-bar,
-                    .csf-bottom-panel,
-                    .csf-corner,
-                    .csf-return-btn {
-                        background: transparent !important;
-                        border: none !important;
-                        box-shadow: none !important;
-                        padding: 0 !important;
-                        margin: 0 !important;
-                    }
-                
-                    /* Eliminar pseudo-elementos y capas decorativas */
-                    app-cockpit-screen-frame::before,
-                    app-cockpit-screen-frame::after,
-                    .csf-bezel::before,
-                    .csf-bezel::after,
-                    .csf-screen::after,
-                    .csf-scanlines,
-                    .csf-vignette,
-                    .csf-power-overlay {
-                        display: none !important;
-                    }
-                
-                    /* Quitar sombra interna de la pantalla */
-                    .csf-screen {
-                        box-shadow: none !important;
-                    }
-                
-                    /* === AGRANDAR FUENTES PARA LEGIBILIDAD === */
-                    .boot-log__text { font-size: 28px !important; }
-                    .boot-log__status { font-size: 24px !important; }
-                    .boot-panel__topbar-label { font-size: 26px !important; }
-                    .boot-panel__section-label { font-size: 24px !important; }
-                    .boot-identity__name { font-size: 60px !important; }
-                    .boot-identity__role { font-size: 30px !important; }
-                    .boot-identity__stack { font-size: 28px !important; }
-                    .boot-ready__text { font-size: 26px !important; }
+                // --- Divisor ---
+                const divY = logStartY + 5 * logLineH + 20;
+                ctx.strokeStyle = 'rgba(139, 148, 158, 0.1)';
+                ctx.beginPath();
+                ctx.moveTo(60, divY);
+                ctx.lineTo(w - 60, divY);
+                ctx.stroke();
 
-        `;
-                    hostElement.appendChild(styleEl);
+                // --- Sección Interaction Logs ---
+                const interactionLabelY = divY + 30;
+                ctx.fillStyle = grayDim;
+                ctx.fillRect(cx - 80, interactionLabelY, 180, 7); // "INTERACTION LOGS"
+                const interactionStartY = interactionLabelY + 25;
+                const interactionLineH = 30;
+                // 15 líneas de interaction simuladas
+                for (let i = 0; i < 15; i++) {
+                    const y = interactionStartY + i * interactionLineH;
+                    // flecha "→"
+                    ctx.fillStyle = grayDim;
+                    ctx.fillRect(cx - 90, y, 10, 6);
+                    // texto (barra gris de ancho variable)
+                    const textWidth = 100 + Math.sin(i * 1.5) * 20;
+                    ctx.fillStyle = gray;
+                    ctx.fillRect(cx - 60, y, textWidth, 6);
+                    // OK (verde)
+                    ctx.fillStyle = green;
+                    ctx.fillRect(cx + 70, y, 20, 6);
                 }
 
-                // 3. Tamaño lógico: exactamente el que usa log-screen (580px de ancho) y alto suficiente
-                const logicalWidth = 580;
-                const logicalHeight = 1400;  // mayor para que quepa todo el contenido
-                hostElement.style.width = logicalWidth + 'px';
-                hostElement.style.height = logicalHeight + 'px';
-                hostElement.style.overflow = 'visible';
+                // --- Divisor ---
+                const divY2 = interactionStartY + 15 * interactionLineH + 20;
+                ctx.strokeStyle = 'rgba(139, 148, 158, 0.1)';
+                ctx.beginPath();
+                ctx.moveTo(60, divY2);
+                ctx.lineTo(w - 60, divY2);
+                ctx.stroke();
 
-                // 4. Capturar con html2canvas a escala 1 (canvas resultante 580x1400)
-                html2canvas(hostElement, {
-                    width: logicalWidth,
-                    height: logicalHeight,
-                    scale: 1,
-                    backgroundColor: '#050505',
-                    logging: false,
-                    useCORS: true,
-                    allowTaint: true
-                }).then(smallCanvas => {
-                    // 5. Escalar el canvas pequeño a 2048px de ancho para la textura final
-                    const targetWidth = 2048;
-                    const scaleUp = targetWidth / smallCanvas.width;
-                    const finalCanvas = document.createElement('canvas');
-                    finalCanvas.width = targetWidth;
-                    finalCanvas.height = smallCanvas.height * scaleUp;
-                    const finalCtx = finalCanvas.getContext('2d', { willReadFrequently: true })!;
-                    finalCtx.imageSmoothingEnabled = true;
-                    finalCtx.drawImage(smallCanvas, 0, 0, finalCanvas.width, finalCanvas.height);
+                // --- Bloque de identidad centrado ---
+                const idY = divY2 + 40;
+                // Nombre grande (blanco)
+                ctx.fillStyle = textBright;
+                ctx.fillRect(cx - 60, idY, 120, 18); // "MATI"
+                // Rol (gris)
+                ctx.fillStyle = gray;
+                ctx.fillRect(cx - 80, idY + 30, 160, 8);
+                // Stack (gris oscuro)
+                ctx.fillStyle = grayDim;
+                ctx.fillRect(cx - 90, idY + 50, 180, 7);
 
-                    // 6. Crear textura y material
-                    const texture = new THREE.CanvasTexture(finalCanvas);
-                    texture.minFilter = THREE.LinearFilter;
-                    texture.magFilter = THREE.LinearFilter;
-                    texture.needsUpdate = true;
-                    texture.flipY = true;
-                    texture.wrapS = THREE.ClampToEdgeWrapping;
-                    texture.wrapT = THREE.ClampToEdgeWrapping;
-                    texture.rotation = -Math.PI / 2;
-                    texture.center.set(0.5, 0.5);
+                // --- System ready + cursor ---
+                const readyY = idY + 100;
+                ctx.fillStyle = green;
+                ctx.fillRect(cx - 70, readyY, 100, 7); // "System ready"
+                // cursor (rectángulo verde que simula el parpadeo)
+                ctx.fillRect(cx + 50, readyY - 2, 10, 12);
 
-                    const newMaterial = new THREE.MeshBasicMaterial({
-                        map: texture,
-                        side: THREE.DoubleSide,
-                        transparent: true,
-                        opacity: 0.4,
-                        depthWrite: false
-                    });
+                // Crear textura con filtro pixelado para mantener el estilo y ahorrar recursos
+                const texture = new THREE.CanvasTexture(canvas);
+                texture.minFilter = THREE.NearestFilter;
+                texture.magFilter = THREE.NearestFilter;
+                texture.needsUpdate = true;
+                texture.flipY = true;
+                texture.wrapS = THREE.ClampToEdgeWrapping;
+                texture.wrapT = THREE.ClampToEdgeWrapping;
+                texture.rotation = -Math.PI / 2;
+                texture.center.set(0.5, 0.5);
 
-                    if (mesh.material) {
-                        if (Array.isArray(mesh.material)) mesh.material.forEach(m => m.dispose());
-                        else mesh.material.dispose();
-                    }
-                    mesh.material = newMaterial;
-                    mesh.material.needsUpdate = true;
-                    mesh.visible = true;
-                    mesh.frustumCulled = false;
-                    mesh.renderOrder = 999;
-
-                    this.screenCanvases.set(mesh.name, finalCanvas);
-                    this.screenTextures.set(mesh.name, texture);
-                    this.cleanup(componentRef, hostElement);
-                    console.log('✅ Textura log‑screen generada: sin borde, texto enorme y nítido');
-                }).catch(err => {
-                    console.error('❌ Error capturando log‑screen:', err);
-                    this.cleanup(componentRef, hostElement);
+                const newMaterial = new THREE.MeshBasicMaterial({
+                    map: texture,
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.4,
+                    depthWrite: false
                 });
+
+                if (mesh.material) {
+                    if (Array.isArray(mesh.material)) mesh.material.forEach(m => m.dispose());
+                    else mesh.material.dispose();
+                }
+                mesh.material = newMaterial;
+                mesh.material.needsUpdate = true;
+                mesh.visible = true;
+                mesh.frustumCulled = false;
+                mesh.renderOrder = 999;
+
+                this.screenCanvases.set(mesh.name, canvas);
+                this.screenTextures.set(mesh.name, texture);
+                console.log('✅ Textura ligera de terminal (estructura real) aplicada');
                 return;
             }
 
