@@ -4,6 +4,8 @@ import {
 } from '@angular/core';
 import { CommonModule, UpperCasePipe } from '@angular/common';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+import { ModuleStateService, BootEntry } from '../services/module-state.service';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -79,13 +81,15 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
     private logScreenCanvas?: HTMLCanvasElement;
     private logScreenTexture?: THREE.CanvasTexture;
     private logScreenEntries: Array<{ text: string; status: 'ok' | 'pending'; addedAt: number }> = [];
+    private interactionEntries: BootEntry[] = [];
+    private destroy$ = new Subject<void>();
     constructor(
         private appRef: ApplicationRef,
         private injector: EnvironmentInjector,
         private modalService: ModalService,
         private router: Router,
-        private ngZone: NgZone
-
+        private ngZone: NgZone,
+        private moduleStateService: ModuleStateService,
     ) {
         // Suscribirse a cambios del modal
         this.modalService.activeModal$.subscribe(modal => {
@@ -98,10 +102,19 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         this.loadModel();
         this.animate();
         this.setupMouseEvents();
-        // this.startCameraDebug(); // Desactivado temporalmente
+
+        // Suscripción a interaction entries del ModuleStateService
+        this.moduleStateService.interactionLogHistory$
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(entries => {
+                this.interactionEntries = [...entries];
+            });
     }
 
     ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
+
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
         }
@@ -2167,112 +2180,146 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         const textBright = '#e6edf3';
         const cx = w / 2;
 
-        // ── Topbar ──
+        // ── Ancho seguro visible del panel (zona UV mapeada al mesh) ──
+        const safeLeft  = cx - 260;
+        const safeRight = cx + 260;
+        const contentW  = safeRight - safeLeft;
+
+        // ── Topbar (siempre visible) ──
+        ctx.textAlign = 'center';
         ctx.font = 'bold 40px monospace';
         ctx.fillStyle = grayDim;
-        ctx.fillText('terminal', cx - 320, 220);
+        ctx.fillText('terminal', cx - 60, 220);
         ctx.fillStyle = green;
         ctx.beginPath();
-        ctx.arc(cx + 40, 204, 16, 0, Math.PI * 2);
+        ctx.arc(cx + 140, 204, 16, 0, Math.PI * 2);
         ctx.fill();
+        ctx.textAlign = 'left';
         ctx.strokeStyle = 'rgba(139, 148, 158, 0.25)';
         ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.moveTo(80, 280);
-        ctx.lineTo(w - 80, 280);
+        ctx.moveTo(safeLeft, 280);
+        ctx.lineTo(safeRight, 280);
         ctx.stroke();
 
-        // ── Sección Boot Sequence ──
-        ctx.font = '36px monospace';
-        ctx.fillStyle = grayDim;
-        ctx.fillText('BOOT SEQUENCE', cx - 280, 380);
+        const lineH    = 88;
+        const now      = Date.now();
+        const arrowW   = 40;
+        const statusW  = 80;
+        const gap      = 16;
+        const textMaxW = contentW - arrowW - gap - statusW - gap;
 
-        const lineH = 88;
-        const now = Date.now();
-        // Mostramos las últimas 8 entradas para que quepan bien
-        const maxVisible = 8;
-        const entries = this.logScreenEntries;
-        const visible = entries.slice(-maxVisible);
-        let y = 460;
+        // Helper para renderizar una lista de entries (misma estética Boot Sequence)
+        const renderEntryList = (
+            list: Array<{ text: string; status: 'ok' | 'pending'; addedAt?: number }>,
+            startY: number,
+            maxVisible: number,
+        ): number => {
+            const visible = list.slice(-maxVisible);
+            let y = startY;
+            visible.forEach((entry) => {
+                const age = entry.addedAt !== undefined ? now - entry.addedAt : now;
+                let alpha = 1;
+                let offsetY = 0;
+                if (age < 300) {
+                    alpha = age / 300;
+                    offsetY = (1 - alpha) * 32;
+                }
+                ctx.globalAlpha = alpha * 0.85;
 
-        visible.forEach((entry, i) => {
-            const age = now - entry.addedAt;
-
-            // Opacidad y slide para entradas nuevas
-            let alpha = 1;
-            let offsetY = 0;
-            if (age < 300) {
-                alpha = age / 300;
-                offsetY = (1 - alpha) * 32;
-            }
-
-            ctx.globalAlpha = alpha * 0.8;
-
-            // Flecha
-            ctx.font = '44px monospace';
-            ctx.fillStyle = grayDim;
-            ctx.fillText('→', cx - 400, y + offsetY);
-
-            // Texto del log
-            ctx.fillStyle = gray;
-            ctx.fillText(entry.text, cx - 320, y + offsetY);
-
-            // Estado
-            ctx.font = '40px monospace';
-            if (entry.status === 'ok') {
-                ctx.fillStyle = green;
-                ctx.fillText('OK', cx + 320, y + offsetY);
-            } else {
+                ctx.font = '42px monospace';
                 ctx.fillStyle = grayDim;
-                ctx.fillText('...', cx + 320, y + offsetY);
-            }
+                ctx.fillText('→', safeLeft, y + offsetY);
 
-            y += lineH;
-            ctx.globalAlpha = 1;
-        });
+                ctx.font = '38px monospace';
+                ctx.fillStyle = gray;
+                ctx.fillText(entry.text, safeLeft + arrowW + gap, y + offsetY, textMaxW);
 
-        // ── Divisor ──
-        y += 40;
-        ctx.strokeStyle = 'rgba(139, 148, 158, 0.15)';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.moveTo(120, y);
-        ctx.lineTo(w - 120, y);
-        ctx.stroke();
+                ctx.font = '36px monospace';
+                ctx.textAlign = 'right';
+                if (entry.status === 'ok') {
+                    ctx.fillStyle = green;
+                    ctx.fillText('OK', safeRight, y + offsetY);
+                } else {
+                    ctx.fillStyle = grayDim;
+                    ctx.fillText('...', safeRight, y + offsetY);
+                }
+                ctx.textAlign = 'left';
 
-        // ── Identidad ──
-        y += 120;
-        ctx.fillStyle = textBright;
-        ctx.font = 'bold 96px monospace';
+                y += lineH;
+                ctx.globalAlpha = 1;
+            });
+            return y;
+        };
+
+        // ── Sección Boot Sequence (siempre visible) ──
         ctx.textAlign = 'center';
-        ctx.fillText('MATIAS OYHAMBURU', cx, y);
+        ctx.font = '34px monospace';
+        ctx.fillStyle = grayDim;
+        ctx.fillText('BOOT SEQUENCE', cx, 380);
         ctx.textAlign = 'left';
 
-        y += 105;
-        ctx.fillStyle = gray;
-        ctx.font = '48px monospace';
-        ctx.fillText('Frontend Developer', cx - 360, y);
+        let y = renderEntryList(this.logScreenEntries, 460, 8);
 
-        y += 60;
-        ctx.fillStyle = grayDim;
-        ctx.font = '40px monospace';
-        ctx.fillText('Angular / TypeScript / CSS', cx - 400, y);
+        if (this.interactionEntries.length <= 1) {
+            // ── Vista: identidad + system ready ──
+            y += 40;
+            ctx.strokeStyle = 'rgba(139, 148, 158, 0.15)';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(safeLeft, y);
+            ctx.lineTo(safeRight, y);
+            ctx.stroke();
 
-        // ── System ready + cursor ──
-        y += 120;
-        ctx.fillStyle = green;
-        ctx.font = '44px monospace';
-        ctx.fillText('System ready', cx - 240, y);
-        const blink = Math.floor(now / 500) % 2 === 0;
-        if (blink) {
+            ctx.textAlign = 'center';
+
+            y += 120;
+            ctx.fillStyle = textBright;
+            ctx.font = 'bold 88px monospace';
+            ctx.fillText('MATI', cx, y);
+
+            y += 100;
+            ctx.fillStyle = gray;
+            ctx.font = '42px monospace';
+            ctx.fillText('Frontend Developer', cx, y);
+
+            y += 60;
+            ctx.fillStyle = grayDim;
+            ctx.font = '34px monospace';
+            ctx.fillText('Angular / TypeScript / CSS', cx, y);
+
+            y += 110;
             ctx.fillStyle = green;
-            ctx.fillRect(cx + 160, y - 40, 32, 48);
+            ctx.font = '40px monospace';
+            ctx.fillText('System ready', cx, y);
+            ctx.textAlign = 'left';
+            const blink = Math.floor(now / 500) % 2 === 0;
+            if (blink) {
+                ctx.fillStyle = green;
+                ctx.fillRect(cx + 182, y - 36, 28, 44);
+            }
+
+        } else {
+            // ── Vista: Interaction Logs (sin identidad ni system ready) ──
+            y += 40;
+            ctx.strokeStyle = 'rgba(139, 148, 158, 0.15)';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(safeLeft, y);
+            ctx.lineTo(safeRight, y);
+            ctx.stroke();
+
+            y += 60;
+            ctx.textAlign = 'center';
+            ctx.font = '34px monospace';
+            ctx.fillStyle = grayDim;
+            ctx.fillText('INTERACTION LOGS', cx, y);
+            ctx.textAlign = 'left';
+
+            y += 40;
+            renderEntryList(this.interactionEntries.filter(e => e.status !== null) as Array<{ text: string; status: 'ok' | 'pending'; addedAt?: number }>, y, 7);
         }
 
         texture.needsUpdate = true;
     }
 }
-
-
-
-
