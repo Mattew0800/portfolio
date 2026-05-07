@@ -606,11 +606,11 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             // ------------------------------------------
             // PLANE_2 (Log Screen): captura con tamaño lógico fijo y escalado
             // ------------------------------------------
-                // Limpiamos el componente que no usaremos
+            // Limpiamos el componente que no usaremos
             if (mesh.name === 'Plane_2') {
                 this.cleanup(componentRef, hostElement);
 
-                const w = 512;
+                const w = 2048;
                 const h = 2048;
                 const canvas = document.createElement('canvas');
                 canvas.width = w;
@@ -659,8 +659,8 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
 
                 // Crear textura
                 const texture = new THREE.CanvasTexture(canvas);
-                texture.minFilter = THREE.NearestFilter;
-                texture.magFilter = THREE.NearestFilter;
+                texture.minFilter = THREE.LinearFilter;
+                texture.magFilter = THREE.LinearFilter;
                 texture.needsUpdate = true;
                 texture.flipY = true;
                 texture.wrapS = THREE.ClampToEdgeWrapping;
@@ -2157,7 +2157,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         const h = canvas.height;
 
         // Limpiar fondo
-        ctx.fillStyle = '#000000';   // antes #050505
+        ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, w, h);
 
         // Colores
@@ -2168,32 +2168,32 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         const cx = w / 2;
 
         // ── Topbar ──
-        ctx.font = '10px monospace';
+        ctx.font = 'bold 40px monospace';
         ctx.fillStyle = grayDim;
-        ctx.fillText('terminal', cx - 80, 55);
+        ctx.fillText('terminal', cx - 320, 220);
         ctx.fillStyle = green;
         ctx.beginPath();
-        ctx.arc(cx + 10, 51, 4, 0, Math.PI * 2);
+        ctx.arc(cx + 40, 204, 16, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = 'rgba(139, 148, 158, 0.15)';
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(139, 148, 158, 0.25)';
+        ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.moveTo(30, 70);
-        ctx.lineTo(w - 30, 70);
+        ctx.moveTo(80, 280);
+        ctx.lineTo(w - 80, 280);
         ctx.stroke();
 
         // ── Sección Boot Sequence ──
-        ctx.font = '9px monospace';
+        ctx.font = '36px monospace';
         ctx.fillStyle = grayDim;
-        ctx.fillText('BOOT SEQUENCE', cx - 70, 95);
+        ctx.fillText('BOOT SEQUENCE', cx - 280, 380);
 
-        const lineH = 22;
+        const lineH = 88;
         const now = Date.now();
-        // Solo mostramos las últimas 20 entradas para no saturar
-        const maxVisible = 20;
+        // Mostramos las últimas 8 entradas para que quepan bien
+        const maxVisible = 8;
         const entries = this.logScreenEntries;
         const visible = entries.slice(-maxVisible);
-        let y = 115;
+        let y = 460;
 
         visible.forEach((entry, i) => {
             const age = now - entry.addedAt;
@@ -2203,28 +2203,28 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             let offsetY = 0;
             if (age < 300) {
                 alpha = age / 300;
-                offsetY = (1 - alpha) * 8;
+                offsetY = (1 - alpha) * 32;
             }
 
             ctx.globalAlpha = alpha * 0.8;
 
             // Flecha
-            ctx.font = '11px monospace';
+            ctx.font = '44px monospace';
             ctx.fillStyle = grayDim;
-            ctx.fillText('→', cx - 100, y + offsetY);
+            ctx.fillText('→', cx - 400, y + offsetY);
 
             // Texto del log
             ctx.fillStyle = gray;
-            ctx.fillText(entry.text, cx - 80, y + offsetY);
+            ctx.fillText(entry.text, cx - 320, y + offsetY);
 
             // Estado
-            ctx.font = '10px monospace';
+            ctx.font = '40px monospace';
             if (entry.status === 'ok') {
                 ctx.fillStyle = green;
-                ctx.fillText('OK', cx + 80, y + offsetY);
+                ctx.fillText('OK', cx + 320, y + offsetY);
             } else {
                 ctx.fillStyle = grayDim;
-                ctx.fillText('...', cx + 80, y + offsetY);
+                ctx.fillText('...', cx + 320, y + offsetY);
             }
 
             y += lineH;
@@ -2232,42 +2232,47 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         });
 
         // ── Divisor ──
-        y += 10;
-        ctx.strokeStyle = 'rgba(139, 148, 158, 0.1)';
+        y += 40;
+        ctx.strokeStyle = 'rgba(139, 148, 158, 0.15)';
+        ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.moveTo(40, y);
-        ctx.lineTo(w - 40, y);
+        ctx.moveTo(120, y);
+        ctx.lineTo(w - 120, y);
         ctx.stroke();
 
         // ── Identidad ──
-        y += 40;
+        y += 120;
         ctx.fillStyle = textBright;
-        ctx.font = 'bold 24px monospace';
+        ctx.font = 'bold 96px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('MATI', cx, y);
+        ctx.fillText('MATIAS OYHAMBURU', cx, y);
         ctx.textAlign = 'left';
 
-        y += 35;
+        y += 105;
         ctx.fillStyle = gray;
-        ctx.font = '12px monospace';
-        ctx.fillText('Frontend Developer', cx - 90, y);
+        ctx.font = '48px monospace';
+        ctx.fillText('Frontend Developer', cx - 360, y);
 
-        y += 20;
+        y += 60;
         ctx.fillStyle = grayDim;
-        ctx.font = '11px monospace';
-        ctx.fillText('Angular / TypeScript / CSS', cx - 100, y);
+        ctx.font = '40px monospace';
+        ctx.fillText('Angular / TypeScript / CSS', cx - 400, y);
 
         // ── System ready + cursor ──
-        y += 40;
+        y += 120;
         ctx.fillStyle = green;
-        ctx.font = '11px monospace';
-        ctx.fillText('System ready', cx - 60, y);
+        ctx.font = '44px monospace';
+        ctx.fillText('System ready', cx - 240, y);
         const blink = Math.floor(now / 500) % 2 === 0;
         if (blink) {
             ctx.fillStyle = green;
-            ctx.fillRect(cx + 40, y - 10, 8, 12);
+            ctx.fillRect(cx + 160, y - 40, 32, 48);
         }
 
         texture.needsUpdate = true;
     }
 }
+
+
+
+
