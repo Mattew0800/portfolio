@@ -14,7 +14,7 @@ export interface Project {
     id:          string;
     codename:    string;
     title:       string;
-    status:      'ONLINE' | 'ACTIVE' | 'ARCHIVED';
+    status:      string;
     role:        string;
     date:        string;
     description: string;
@@ -39,48 +39,65 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     readonly projects: Project[] = [
         {
             id: '01',
-            codename: 'NEXUS-SHOP',
-            title: 'NexusShop',
+            codename: 'Nomadia',
+            title: '',
             status: 'ONLINE',
-            role: 'Fullstack Developer',
-            date: '2024',
-            description: 'Plataforma de e-commerce completa con gestión de inventario, pagos y panel admin.',
-            longDesc: 'Aplicación fullstack con carrito de compras, integración con pasarela de pagos, dashboard de administración, gestión de stock en tiempo real y sistema de roles (admin/cliente). Arquitectura REST con autenticación JWT.',
-            stack: ['Angular', 'Spring Boot', 'PostgreSQL', 'JWT', 'Docker'],
+            role: 'Frontend Developer',
+            date: '2025-2026',
+            description: 'Desarrollo frontend de aplicación web para planificación colaborativa de viajes.',
+            longDesc: 'Implementación de flujos de autenticación y guards de navegación, formularios reactivos con validaciones personalizadas\n' +
+                'y gestión de estados. Comunicación con API REST mediante servicios e interceptores HTTP. Funcionalidades de CRUD para viajes, actividades y gastos compartidos, gestión de usuarios colaboradores y carga de\n' +
+                'imágenes a la nube.\n Arquitectura basada en componentes reutilizables, programación reactiva y separación de responsabilidades.',
+            stack: ['Angular', 'TypeScript', 'HTML', 'SCSS', 'RxJS'],
             image: 'assets/projects/nexusshop.png',
-            github: 'https://github.com/tu-usuario/nexusshop',
-            demo: 'https://nexusshop.demo.com',
+            github: 'https://github.com/Mattew0800/Nomadia',
+            demo: 'https://nomadia-viajes.vercel.app/',
         },
         {
             id: '02',
-            codename: 'ORBITCHAT',
-            title: 'OrbitChat',
-            status: 'ONLINE',
-            role: 'Backend Developer',
-            date: '2024',
-            description: 'Aplicación de mensajería en tiempo real con salas, notificaciones y cifrado.',
-            longDesc: 'Sistema de chat con comunicación bidireccional via WebSocket, salas públicas y privadas, notificaciones push, historial de mensajes persistido en base de datos, y cifrado de extremo a extremo en mensajes directos.',
-            stack: ['Angular', 'Spring Boot', 'WebSocket', 'MongoDB', 'TypeScript'],
+            codename: 'AZTK ARENA SYSTEM',
+            title: 'HoyJugas',
+            status: 'IN DEVELOPMENT',
+            role: 'Frontend Developer',
+            date: '2026',
+            description: 'AGREGAR DESCRIPCION',
+            longDesc: 'AGREGAR DESCRIPCION',
+
+            stack: ['Angular', 'TypeScript', 'HTML', 'SCSS', 'RxJS'],
             image: 'assets/projects/orbitchat.png',
-            github: 'https://github.com/tu-usuario/orbitchat',
+            github: 'https://github.com/Mattew0800/hoyjugas',
             demo: null,
         },
         {
             id: '03',
-            codename: 'TASKFORGE',
-            title: 'TaskForge',
-            status: 'ACTIVE',
-            role: 'Fullstack Developer',
-            date: '2023',
-            description: 'Gestor de proyectos estilo Kanban con colaboración en tiempo real y métricas.',
-            longDesc: 'Herramienta de gestión de tareas con tableros Kanban drag-and-drop, asignación de usuarios, fechas límite, etiquetas personalizadas, reportes de productividad y actualización en tiempo real entre colaboradores.',
-            stack: ['Angular', 'Spring Boot', 'MySQL', 'RxJS', 'Chart.js'],
+            codename: 'Caprish',
+            title: 'Complex Team',
+            status: 'OFFLINE',
+            role: 'Backend Developer',
+            date: '2025',
+            description: 'Desarrollo de plataforma de comercio electrónico',
+            longDesc: 'Desarrollo de una plataforma de comercio electrónico utilizando Java y Spring Boot, con funcionalidades completas de gestión de productos, carritos de compra, control de stock y autenticación segura con JWT. El proyecto incluye arquitectura REST, integración con Gmail API, manejo de roles de usuario y documentación de API con OpenAPI/Swagger.',
+            stack: ['Java', 'Spring Boot (REST)', 'MySQL', 'JWT', 'OpenAPI/Swagger'],
             image: 'assets/projects/taskforge.png',
             github: 'https://github.com/tu-usuario/taskforge',
             demo: 'https://taskforge.demo.com',
         },
         {
             id: '04',
+            codename: 'TVBOX',
+            title: 'v2',
+            status: 'COMPLETED',
+            role: 'Fullstack Developer',
+            date: '2025',
+            description: 'Plataforma multi-view para monitoreo simultáneo de canales de noticias en vivo.',
+            longDesc: 'Aplicación desarrollada para un grupo de economistas que necesitaban seguir la cobertura de elecciones argentinas en tiempo real desde múltiples medios simultáneamente. La plataforma permite visualizar hasta 9 transmisiones en vivo en una grilla dinámica configurable, con controles independientes por canal. Incluye autenticación de usuarios con Django, panel administrativo para gestión de canales y conversión automática de enlaces de YouTube a formatos embebibles compatibles.',
+            stack: ['Angular (RxJS)', 'TypeScript', 'HTML', 'SCSS', 'FastAPI (Python)'],
+            image: 'assets/projects/portfolio3d.png',
+            github: 'https://github.com/Mattew0800/tvbox',
+            demo: null,
+        },
+        {
+            id: '05',
             codename: 'PORTFOLIO-3D',
             title: 'Portfolio 3D',
             status: 'ACTIVE',
@@ -128,7 +145,15 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     }
 
     statusLabel(s: Project['status']): string {
-        return { ONLINE: '● ONLINE', ACTIVE: '● ACTIVE', ARCHIVED: '○ ARCHIVED' }[s];
+        const labels: { [key: string]: string } = {
+            ONLINE: '● ONLINE',
+            ACTIVE: '● ACTIVE',
+            ARCHIVED: '○ ARCHIVED',
+            'IN DEVELOPMENT': '◐ IN DEVELOPMENT',
+            OFFLINE: '○ OFFLINE',
+            COMPLETED: '✓ COMPLETED'
+        };
+        return labels[s] || s;
     }
 
     openLink(url: string): void {
