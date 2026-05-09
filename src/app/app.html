@@ -8,6 +8,7 @@
       <span>{{ 'language.switcherLabel' | translate }}</span>
       <button
         type="button"
+        aria-label="Switch to Spanish / Cambiar a español"
         [class.active]="currentLanguage() === 'es'"
         (click)="selectLanguage('es')"
       >
@@ -15,6 +16,7 @@
       </button>
       <button
         type="button"
+        aria-label="Switch to English / Cambiar a inglés"
         [class.active]="currentLanguage() === 'en'"
         (click)="selectLanguage('en')"
       >
@@ -36,8 +38,20 @@
     <div class="language-modal">
       <h2>Select language / Selecciona idioma</h2>
       <div class="language-modal-actions">
-        <button type="button" (click)="selectLanguage('es')">Español</button>
-        <button type="button" (click)="selectLanguage('en')">English</button>
+        <button
+          type="button"
+          aria-label="Select Spanish language / Seleccionar idioma español"
+          (click)="selectLanguage('es')"
+        >
+          Español
+        </button>
+        <button
+          type="button"
+          aria-label="Select English language / Seleccionar idioma inglés"
+          (click)="selectLanguage('en')"
+        >
+          English
+        </button>
       </div>
     </div>
   </div>
