@@ -1,6 +1,10 @@
 <div class="app-shell">
   @if (!showLanguageModal()) {
-    <div class="runtime-language-switcher" role="group" aria-label="language switcher">
+    <div
+      class="runtime-language-switcher"
+      role="group"
+      [attr.aria-label]="'language.switcherLabel' | translate"
+    >
       <span>{{ 'language.switcherLabel' | translate }}</span>
       <button
         type="button"
@@ -23,7 +27,12 @@
 </div>
 
 @if (showLanguageModal()) {
-  <div class="language-modal-backdrop" role="dialog" aria-modal="true" aria-label="language selector">
+  <div
+    class="language-modal-backdrop"
+    role="dialog"
+    aria-modal="true"
+    aria-label="language selector / selector de idioma"
+  >
     <div class="language-modal">
       <h2>Select language / Selecciona idioma</h2>
       <div class="language-modal-actions">
