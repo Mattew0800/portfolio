@@ -7,3 +7,69 @@
   background: #000;
 }
 
+.app-shell {
+  width: 100%;
+  height: 100%;
+}
+
+.runtime-language-switcher {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+
+  button {
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 6px;
+    background: transparent;
+    color: #fff;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+
+  button.active {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.language-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.78);
+}
+
+.language-modal {
+  width: min(90vw, 360px);
+  border-radius: 10px;
+  background: #0f1115;
+  color: #fff;
+  padding: 24px;
+  text-align: center;
+}
+
+.language-modal-actions {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  button {
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 6px;
+    background: transparent;
+    color: #fff;
+    padding: 10px 12px;
+    cursor: pointer;
+  }
+}
