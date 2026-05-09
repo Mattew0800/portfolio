@@ -110,15 +110,40 @@
                     <div class="panel__image-wrap">
                         <img
                                 class="panel__image"
-                                [src]="selectedProject.image"
+                                [src]="selectedProject.images[currentImageIndex]"
                                 [alt]="'Screenshot de ' + selectedProject.title"
                                 loading="lazy"
+                                (click)="openImageViewer(currentImageIndex)"
                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
                         />
+                        <button 
+                            class="panel__fullscreen-btn"
+                            (click)="openImageViewer(currentImageIndex)"
+                            aria-label="Ver imagen en pantalla completa"
+                        >
+                            <span class="panel__fullscreen-icon">[ ⛶ ]</span>
+                            <span class="panel__fullscreen-text">FULLSCREEN</span>
+                        </button>
                         <div class="panel__image-fallback" style="display:none" aria-hidden="true">
                             <span>[ NO SIGNAL ]</span>
                         </div>
                     </div>
+
+                    <!-- Galería de miniaturas si hay múltiples imágenes -->
+                    @if (selectedProject.images.length > 1) {
+                        <div class="panel__gallery">
+                            @for (image of selectedProject.images; track $index; let i = $index) {
+                                <button
+                                    class="panel__thumbnail"
+                                    [class.panel__thumbnail--active]="i === currentImageIndex"
+                                    (click)="selectThumbnail(i)"
+                                    [attr.aria-label]="'Ver imagen ' + (i + 1) + ' de ' + selectedProject.images.length"
+                                >
+                                    <img [src]="image" [alt]="'Thumbnail ' + (i + 1)" loading="lazy" />
+                                </button>
+                            }
+                        </div>
+                    }
 
                     <div class="panel__info">
 
@@ -174,6 +199,69 @@
                     </div>
                 </div>
 
+            </div>
+        </div>
+    }
+
+    <!-- ─── VISOR DE IMÁGENES FULLSCREEN ─────────────────────── -->
+    @if (isImageViewerOpen && selectedProject && selectedProject.images[currentImageIndex]) {
+        <div
+            class="image-viewer-backdrop"
+            [class.image-viewer-backdrop--closing]="isImageViewerClosing"
+            (click)="closeImageViewer()"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Visor de imágenes"
+        >
+            <div
+                class="image-viewer"
+                [class.image-viewer--closing]="isImageViewerClosing"
+                (click)="$event.stopPropagation()"
+            >
+                <button
+                    class="image-viewer__close"
+                    (click)="closeImageViewer()"
+                    aria-label="Cerrar visor"
+                >
+                    [ × ]
+                </button>
+
+                <!-- Contenedor de imagen centrado -->
+                <div class="image-viewer__container">
+                    <img
+                        class="image-viewer__image"
+                        [src]="selectedProject.images[currentImageIndex]"
+                        [alt]="'Imagen ' + (currentImageIndex + 1)"
+                    />
+                </div>
+
+                <!-- Controles en la parte inferior -->
+                <div class="image-viewer__controls">
+                    <!-- Botón navegación izquierda -->
+                    <button
+                        class="image-viewer__nav image-viewer__nav--prev"
+                        (click)="prevImage()"
+                        aria-label="Imagen anterior"
+                    >
+                        [ ← ]
+                    </button>
+
+                    <!-- Contador -->
+                    <div class="image-viewer__info">
+                        <span class="image-viewer__counter">
+                            {{ currentImageIndex + 1 }} / {{ selectedProject.images.length }}
+                        </span>
+                    </div>
+
+                    <!-- Botón navegación derecha -->
+                    <button
+                        class="image-viewer__nav image-viewer__nav--next"
+                        (click)="nextImage()"
+                        aria-label="Siguiente imagen"
+                    >
+                        [ → ]
+                    </button>
+                </div>
             </div>
         </div>
     }

@@ -241,6 +241,11 @@
   mix-blend-mode: multiply;
 }
 
+// Ocultar scanlines cuando el visor fullscreen está activo
+:host-context(body.image-viewer-active) .csf-scanlines {
+  display: none !important;
+}
+
 // ── Vignette ─────────────────────────────────────────────────
 .csf-vignette {
   position: absolute;

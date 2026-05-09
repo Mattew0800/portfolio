@@ -20,7 +20,7 @@ export interface Project {
     description: string;
     longDesc:    string;
     stack:       string[];
-    image:       string;
+    images:      string[];
     github:      string | null;
     demo:        string | null;
 }
@@ -49,7 +49,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
                 'y gestión de estados. Comunicación con API REST mediante servicios e interceptores HTTP. Funcionalidades de CRUD para viajes, actividades y gastos compartidos, gestión de usuarios colaboradores y carga de\n' +
                 'imágenes a la nube.\n Arquitectura basada en componentes reutilizables, programación reactiva y separación de responsabilidades.',
             stack: ['Angular', 'TypeScript', 'HTML', 'SCSS', 'RxJS'],
-            image: 'assets/projects/nexusshop.png',
+            images: ['assets/projects/nomadia/landing.png','assets/projects/nomadia/login.png','assets/projects/nomadia/register.png','assets/projects/nomadia/viajes.png','assets/projects/nomadia/home_page.png','assets/projects/nomadia/gastos.png','assets/projects/nomadia/nuevo_gasto.png','assets/projects/nomadia/balance.png'],
             github: 'https://github.com/Mattew0800/Nomadia',
             demo: 'https://nomadia-viajes.vercel.app/',
         },
@@ -64,7 +64,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
             longDesc: 'AGREGAR DESCRIPCION',
 
             stack: ['Angular', 'TypeScript', 'HTML', 'SCSS', 'RxJS'],
-            image: 'assets/projects/orbitchat.png',
+            images: ['assets/projects/orbitchat.png'],
             github: 'https://github.com/Mattew0800/hoyjugas',
             demo: null,
         },
@@ -78,7 +78,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
             description: 'Desarrollo de plataforma de comercio electrónico',
             longDesc: 'Desarrollo de una plataforma de comercio electrónico utilizando Java y Spring Boot, con funcionalidades completas de gestión de productos, carritos de compra, control de stock y autenticación segura con JWT. El proyecto incluye arquitectura REST, integración con Gmail API, manejo de roles de usuario y documentación de API con OpenAPI/Swagger.',
             stack: ['Java', 'Spring Boot (REST)', 'MySQL', 'JWT', 'OpenAPI/Swagger'],
-            image: 'assets/projects/taskforge.png',
+            images: ['assets/projects/taskforge.png'],
             github: 'https://github.com/tu-usuario/taskforge',
             demo: 'https://taskforge.demo.com',
         },
@@ -92,7 +92,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
             description: 'Plataforma multi-view para monitoreo simultáneo de canales de noticias en vivo.',
             longDesc: 'Aplicación desarrollada para un grupo de economistas que necesitaban seguir la cobertura de elecciones argentinas en tiempo real desde múltiples medios simultáneamente. La plataforma permite visualizar hasta 9 transmisiones en vivo en una grilla dinámica configurable, con controles independientes por canal. Incluye autenticación de usuarios con Django, panel administrativo para gestión de canales y conversión automática de enlaces de YouTube a formatos embebibles compatibles.',
             stack: ['Angular (RxJS)', 'TypeScript', 'HTML', 'SCSS', 'FastAPI (Python)'],
-            image: 'assets/projects/portfolio3d.png',
+            images: ['assets/projects/portfolio3d.png'],
             github: 'https://github.com/Mattew0800/tvbox',
             demo: null,
         },
@@ -106,7 +106,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
             description: 'Este mismo portfolio — escena 3D interactiva de una nave espacial con Three.js.',
             longDesc: 'Portfolio personal construido con Angular y Three.js. Incluye escena 3D de cockpit espacial navegable, sistema de cámaras, pantallas interactivas con navegación, animaciones de transición warp speed y renderizado de nebulosas procedurales.',
             stack: ['Angular', 'Three.js', 'SCSS', 'TypeScript', 'WebGL'],
-            image: 'assets/projects/portfolio3d.png',
+            images: ['assets/projects/portfolio3d.png'],
             github: 'https://github.com/tu-usuario/portfolio-3d',
             demo: null,
         },
@@ -116,6 +116,11 @@ export class ProjectsComponent implements OnInit, OnDestroy {
     isDetailOpen    = false;
     isClosing       = false;
     hoveredId: string | null = null;
+
+    // Propiedades para el visor de imágenes
+    isImageViewerOpen = false;
+    currentImageIndex = 0;
+    isImageViewerClosing = false;
 
     ngOnInit(): void {}
     ngOnDestroy(): void {}
@@ -139,9 +144,59 @@ export class ProjectsComponent implements OnInit, OnDestroy {
         this.modalService.closeModal();
     }
 
+    openImageViewer(index: number = 0): void {
+        this.currentImageIndex = index;
+        this.isImageViewerOpen = true;
+        this.isImageViewerClosing = false;
+        // Agregar clase al documento para ocultar scanlines
+        document.body.classList.add('image-viewer-active');
+    }
+
+    closeImageViewer(): void {
+        this.isImageViewerClosing = true;
+        setTimeout(() => {
+            this.isImageViewerOpen = false;
+            this.isImageViewerClosing = false;
+            // Remover clase del documento
+            document.body.classList.remove('image-viewer-active');
+        }, 300);
+    }
+
+    selectThumbnail(index: number): void {
+        if (this.selectedProject) {
+            this.currentImageIndex = index;
+        }
+    }
+
+    nextImage(): void {
+        if (this.selectedProject) {
+            this.currentImageIndex = (this.currentImageIndex + 1) % this.selectedProject.images.length;
+        }
+    }
+
+    prevImage(): void {
+        if (this.selectedProject) {
+            this.currentImageIndex = (this.currentImageIndex - 1 + this.selectedProject.images.length) % this.selectedProject.images.length;
+        }
+    }
+
     @HostListener('document:keydown.escape')
     onEsc(): void {
-        if (this.isDetailOpen) this.closeDetail();
+        if (this.isImageViewerOpen) {
+            this.closeImageViewer();
+        } else if (this.isDetailOpen) {
+            this.closeDetail();
+        }
+    }
+
+    @HostListener('document:keydown.arrowright')
+    onArrowRight(): void {
+        if (this.isImageViewerOpen) this.nextImage();
+    }
+
+    @HostListener('document:keydown.arrowleft')
+    onArrowLeft(): void {
+        if (this.isImageViewerOpen) this.prevImage();
     }
 
     statusLabel(s: Project['status']): string {
