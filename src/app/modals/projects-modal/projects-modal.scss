@@ -200,7 +200,8 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 .entry {
   position: relative;
   display: grid;
-  grid-template-columns: 52px 1fr auto auto 120px;
+  // 1. ID | 2. Nombre | 3. Contenedor Stack (Centro) | 4. Estado | 5. Botón
+  grid-template-columns: 52px 220px 1fr 160px 120px;
   align-items: center;
   gap: 20px;
   padding: 32px 24px;
@@ -297,9 +298,13 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   text-transform: uppercase;
 }
 
+// ESTE ES EL CONTENEDOR DE LAS TECNOLOGÍAS (Ocupa el 1fr)
 .entry__stack {
   list-style: none;
   display: flex;
+  justify-content: center;      // ← Esto centra todo el grupo horizontalmente
+  align-items: center;          // ← Centrado vertical
+  width: 100%;                  // ← Asegura que ocupe todo el espacio disponible
   gap: 6px;
   flex-wrap: nowrap;
   margin: 0;
@@ -308,11 +313,13 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
 // Chips sin borde — fondo sutil. Menos ruido, misma info
 .entry__tech {
+  display: inline-flex;         // ← inline-flex es más adecuado para chips
+  align-items: center;
   font-size: 12px;
   letter-spacing: 1.5px;
   color: rgba($accent, .88);
   text-transform: uppercase;
-  background: rgba($accent, .08);   // ← antes: border + color saturado
+  background: rgba($accent, .08);
   padding: 4px 10px;
   white-space: nowrap;
   font-weight: 600;
@@ -325,7 +332,7 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .entry__status {
-  font-size: 11px;              // ← antes: 10px
+  font-size: 11px;
   letter-spacing: 2px;
   text-transform: uppercase;
   white-space: nowrap;
@@ -344,7 +351,7 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   text-transform: uppercase;
   white-space: nowrap;
   text-align: right;
-  opacity: 0;                   // ← antes: 1 siempre visible → ruido
+  opacity: 0;
   font-weight: 600;
   transition: opacity .2s $ease-in-out, color .2s $ease-in-out;
   user-select: none;
