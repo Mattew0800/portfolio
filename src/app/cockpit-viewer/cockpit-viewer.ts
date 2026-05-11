@@ -1444,6 +1444,12 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
     }
 
     private onMouseClick(event: MouseEvent): void {
+        // Ignorar clicks si hay un modal abierto
+        if (this.activeModal) {
+            console.log('🚫 Click ignorado - Modal abierto:', this.activeModal);
+            return;
+        }
+
         console.log('🖱️ CLICK DETECTADO - Probando raycasting...');
 
         const canvas = this.canvasRef.nativeElement;
@@ -1548,6 +1554,11 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
     }
 
     private onMouseMove(event: MouseEvent): void {
+        // Ignorar movimiento del mouse si hay un modal abierto
+        if (this.activeModal) {
+            return;
+        }
+
         // Convertir posición del mouse a coordenadas normalizadas (-1 a +1)
         const canvas = this.canvasRef.nativeElement;
         const rect = canvas.getBoundingClientRect();
