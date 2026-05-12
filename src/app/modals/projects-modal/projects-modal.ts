@@ -78,7 +78,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
             description: 'Desarrollo de plataforma de comercio electrónico',
             longDesc: 'Desarrollo de API de comercio electrónico utilizando Java y Spring Boot, con funcionalidades completas de gestión de productos, carritos de compra, control de stock y autenticación segura con JWT. El proyecto incluye arquitectura REST, integración con Gmail API, manejo de roles de usuario y documentación de API con OpenAPI/Swagger.',
             stack: ['Java', 'Spring Boot (REST)', 'MySQL', 'JWT', 'OpenAPI/Swagger'],
-            images: ['assets/projects/caprish/caprish.jpeg'],
+            images: ['assets/projects/caprish/caprish.png'],
             github: 'https://github.com/Mattew0800/Caprish',
             demo: null,
         },
