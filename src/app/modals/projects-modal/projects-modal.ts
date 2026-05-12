@@ -106,7 +106,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
             description: 'Portfolio interactivo immersivo con experiencia 3D de cockpit espacial navegable y pantallas dinámicas.',
             longDesc: 'Portfolio personal inmersivo construido con Angular, Three.js y WebGL. Implementa una escena 3D interactiva de un cockpit espacial completamente funcional con múltiples pantallas dinámicas que muestran contenido renderizado en tiempo real. Características avanzadas incluyen: paneles interactivos que renderizan componentes Angular como texturas (html2canvas), carga asincrónica de modelos GLTF/GLB, renderizado dinámico de video en texturas, animaciones de transición smooth, sistema de logs integrado y navegación contextual. La arquitectura utiliza inyección de dependencias de Angular, gestión de estados reactiva con RxJS, y patrones avanzados de WebGL para optimizar el renderizado en tiempo real. Cada pantalla es clickeable y navega a diferentes secciones del portfolio (proyectos, habilidades, experiencia, contacto) manteniendo una experiencia inmersiva y moderna.',
             stack: ['Angular', 'Three.js', 'WebGL', 'TypeScript', 'SCSS', 'GLTF/GLB', 'html2canvas', 'RxJS', 'Vectary'],
-            images: ['assets/projects/portfolio3d.png'],
+            images: ['assets/projects/portfolio/cockpit.png','assets/projects/portfolio/cockpit-2.png','assets/projects/portfolio/module-ship.png','assets/projects/portfolio/log-screen.png','assets/projects/portfolio/log-screen-2.png'],
             github: 'https://github.com/mattew0800/portfolio',
             demo: null,
         },
