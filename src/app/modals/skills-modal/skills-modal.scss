@@ -438,6 +438,14 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transition: fill .25s;
 }
 
+.skill-card__image {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  opacity: 0.85;
+  transition: opacity .25s;
+}
+
 .skill-card__initials {
   font-family: $font-display;
   font-size: 12px;

@@ -5,8 +5,8 @@ import {ModalService} from "../../services/modal.service";
 
 export interface Skill {
     name:  string;
-    icon:  string;   // SVG path string o iniciales fallback
-    type:  'svg' | 'text';
+    icon:  string;   // Ruta de imagen, SVG path string o iniciales fallback
+    type:  'svg' | 'text' | 'image';
 }
 
 export interface SkillCategory {
@@ -44,57 +44,52 @@ export class SkillsModalComponent {
             id: '01', codename: 'BACKEND-CORE', label: 'Backend',
             isOpen: true,
             skills: [
-                { name: 'Java',           type: 'text', icon: 'JV' },
-                { name: 'Spring Boot',    type: 'svg',  icon: springBootPath() },
-                { name: 'Spring Security',type: 'text', icon: 'SS' },
-                { name: 'Spring Data JPA',type: 'text', icon: 'JP' },
-                { name: 'Hibernate',      type: 'text', icon: 'HB' },
-                { name: 'REST APIs',      type: 'text', icon: 'RE' },
-                { name: 'JWT',            type: 'text', icon: 'JW' },
-                { name: 'Maven',          type: 'text', icon: 'MV' },
+                { name: 'Java',           type: 'image', icon: 'assets/technologies-images/java.svg' },
+                { name: 'Spring Boot',    type: 'image', icon: 'assets/technologies-images/spring-icon.svg' },
+                { name: 'Spring Security',type: 'image',  icon: 'assets/technologies-images/spring-security.svg' },
+                { name: 'Spring Data JPA',type: 'text',  icon: 'JPA' },
+                { name: 'Hibernate',      type: 'image', icon: 'assets/technologies-images/hibernate.svg' },
+                { name: 'JWT',            type: 'image', icon: 'assets/technologies-images/jwt-icon.svg' },
+                { name: 'Maven',          type: 'image',  icon: 'assets/technologies-images/maven.svg' },
             ],
         },
         {
             id: '02', codename: 'FRONTEND-CORE', label: 'Frontend',
             isOpen: true,
             skills: [
-                { name: 'Angular',     type: 'svg',  icon: angularPath() },
-                { name: 'TypeScript',  type: 'text', icon: 'TS' },
-                { name: 'RxJS',        type: 'text', icon: 'RX' },
-                { name: 'HTML5',       type: 'text', icon: 'HT' },
-                { name: 'SCSS / CSS',  type: 'text', icon: 'SC' },
-                { name: 'Three.js',    type: 'text', icon: '3J' },
+                { name: 'Angular',     type: 'image', icon: 'assets/technologies-images/angular-icon.svg' },
+                { name: 'TypeScript',  type: 'image', icon: 'assets/technologies-images/typescript-icon.svg' },
+                { name: 'RxJS',        type: 'image', icon: 'assets/technologies-images/reactivex.svg' },
+                { name: 'HTML5',       type: 'image', icon: 'assets/technologies-images/html-5.svg' },
+                { name: 'SCSS / CSS',  type: 'image', icon: 'assets/technologies-images/sass.svg' },
+                { name: 'Three.js',    type: 'image', icon: 'assets/technologies-images/threejs.svg' },
             ],
         },
         {
             id: '03', codename: 'DATA-LAYER', label: 'Databases',
             isOpen: false,
             skills: [
-                { name: 'PostgreSQL', type: 'text', icon: 'PG' },
-                { name: 'MySQL',      type: 'text', icon: 'MY' },
-                { name: 'MongoDB',    type: 'text', icon: 'MG' },
+                { name: 'SQL', type: 'image', icon: 'assets/technologies-images/sql.svg' },
+                { name: 'MySQL',      type: 'image', icon: 'assets/technologies-images/mysql-icon.svg' },
+                { name: 'SQlite',    type: 'image', icon: 'assets/technologies-images/sqlite.svg' },
             ],
         },
         {
             id: '04', codename: 'DEVOPS-TOOLS', label: 'DevOps & Tools',
             isOpen: false,
             skills: [
-                { name: 'Git',         type: 'svg',  icon: gitPath() },
-                { name: 'GitHub',      type: 'text', icon: 'GH' },
-                { name: 'Docker',      type: 'text', icon: 'DK' },
-                { name: 'Postman',     type: 'text', icon: 'PM' },
-                { name: 'IntelliJ',   type: 'text', icon: 'IJ' },
-                { name: 'VS Code',     type: 'text', icon: 'VS' },
+                { name: 'Git',         type: 'image', icon: 'assets/technologies-images/git.svg' },
+                { name: 'GitHub',      type: 'image',  icon: 'assets/technologies-images/github-icon.svg' },
+                { name: 'Postman',     type: 'image', icon: 'assets/technologies-images/postman-icon.svg' },
             ],
         },
         {
             id: '05', codename: 'ARCHITECTURE', label: 'Architecture',
             isOpen: false,
             skills: [
-                { name: 'MVC Pattern',      type: 'text', icon: 'MV' },
+                { name: 'MVC Pattern',       type: 'text', icon: 'MVC' },
                 { name: 'Clean Architecture',type: 'text', icon: 'CA' },
-                { name: 'Microservices',     type: 'text', icon: 'MS' },
-                { name: 'SOLID Principles',  type: 'text', icon: 'SO' },
+                { name: 'SOLID Principles',  type: 'text', icon: 'SOLID' },
                 { name: 'Design Patterns',   type: 'text', icon: 'DP' },
             ],
         },
@@ -121,16 +116,3 @@ export class SkillsModalComponent {
     }
 }
 
-// ─── SVG PATHS (inline, sin dependencias externas) ───────────────────────────
-
-function springBootPath(): string {
-    return 'M20.205 16.392c-2.469 3.289-7.758 2.692-11.018 2.692l-1.55 3.69c3.764.494 10.705.257 13.76-3.4a7.006 7.006 0 0 0-1.192-2.982zM12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm.984-9.052c-1.274-.657-2.759-.926-3.63-1.81-.372-.41-.435-1.168.255-1.488.84-.38 2.143-.047 3.07.248l.438-1.835c-1.138-.418-2.33-.508-3.497-.247-2.47.55-2.975 2.592-2.226 3.988.806 1.492 2.65 1.82 3.908 2.39.586.264.896.835.553 1.411-.41.693-1.52.89-2.556.739-.788-.116-1.576-.4-2.32-.737l-.44 1.876c.757.337 1.688.601 2.67.67 1.847.136 4.057-.328 4.682-2.17.493-1.47-.152-2.427-1.907-3.035z';
-}
-
-function angularPath(): string {
-    return 'M9.93 12.645h4.134L11.996 7.74zM11.996 2L2 6.285l1.498 12.927 8.498 4.788 8.503-4.788L22 6.285zm4.693 15.69l-1.381-3.456H10.685l-1.381 3.456-2.37-1.072 4.718-11.4h.704l4.718 11.4z';
-}
-
-function gitPath(): string {
-    return 'M23.546 10.93L13.067.452a1.55 1.55 0 0 0-2.188 0L8.708 2.627l2.76 2.76a1.838 1.838 0 0 1 2.327 2.341l2.658 2.66a1.838 1.838 0 1 1-1.102 1.71 1.836 1.836 0 0 1 .048-.426L12.84 9.198v6.044 a1.835 1.835 0 1 1-1.51-.18V9.15a1.835 1.835 0 0 1-.987-2.41L7.585 4.005 .45 11.147a1.55 1.55 0 0 0 0 2.188l10.48 10.478a1.55 1.55 0 0 0 2.188 0l10.428-10.43a1.55 1.55 0 0 0 0-2.453z';
-}

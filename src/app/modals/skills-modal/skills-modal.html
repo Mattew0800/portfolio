@@ -64,7 +64,9 @@
                                     [attr.aria-label]="skill.name"
                             >
                                 <div class="skill-card__icon" aria-hidden="true">
-                                    @if (skill.type === 'svg') {
+                                    @if (skill.type === 'image') {
+                                        <img class="skill-card__image" [src]="skill.icon" [alt]="skill.name" />
+                                    } @else if (skill.type === 'svg') {
                                         <svg class="skill-card__svg" viewBox="0 0 24 24">
                                             <path [attr.d]="skill.icon"/>
                                         </svg>
