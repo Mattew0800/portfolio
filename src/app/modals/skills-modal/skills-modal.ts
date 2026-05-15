@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import {CockpitScreenFrameComponent} from "../../components/cockpit-screen-frame/cockpit-screen-frame";
 import {ModalService} from "../../services/modal.service";
@@ -31,30 +31,18 @@ export interface SkillCategory {
     ],
     imports: [
         CockpitScreenFrameComponent
-    ]
+    ],
+    changeDetection: ChangeDetectionStrategy.Default
 })
 export class SkillsModalComponent {
 
-    constructor(public modalService: ModalService) {
+    constructor(public modalService: ModalService, private cdr: ChangeDetectorRef) {
     }
 
     // ─── DATOS — reemplazá con tus skills reales ─────────────────────────────
     categories: SkillCategory[] = [
         {
-            id: '01', codename: 'BACKEND-CORE', label: 'Backend',
-            isOpen: true,
-            skills: [
-                { name: 'Java',           type: 'image', icon: 'assets/technologies-images/java.svg' },
-                { name: 'Spring Boot',    type: 'image', icon: 'assets/technologies-images/spring-icon.svg' },
-                { name: 'Spring Security',type: 'image',  icon: 'assets/technologies-images/spring-security.svg' },
-                { name: 'Spring Data JPA',type: 'text',  icon: 'JPA' },
-                { name: 'Hibernate',      type: 'image', icon: 'assets/technologies-images/hibernate.svg' },
-                { name: 'JWT',            type: 'image', icon: 'assets/technologies-images/jwt-icon.svg' },
-                { name: 'Maven',          type: 'image',  icon: 'assets/technologies-images/maven.svg' },
-            ],
-        },
-        {
-            id: '02', codename: 'FRONTEND-CORE', label: 'Frontend',
+            id: '01', codename: 'FRONTEND-CORE', label: '',
             isOpen: true,
             skills: [
                 { name: 'Angular',     type: 'image', icon: 'assets/technologies-images/angular-icon.svg' },
@@ -66,7 +54,21 @@ export class SkillsModalComponent {
             ],
         },
         {
-            id: '03', codename: 'DATA-LAYER', label: 'Databases',
+            id: '02', codename: 'BACKEND-CORE', label: '',
+            isOpen: false,
+            skills: [
+                { name: 'Java',           type: 'image', icon: 'assets/technologies-images/java.svg' },
+                { name: 'Spring Boot',    type: 'image', icon: 'assets/technologies-images/spring-icon.svg' },
+                { name: 'Spring Security',type: 'image',  icon: 'assets/technologies-images/spring-security.svg' },
+                { name: 'Spring Data JPA',type: 'text',  icon: 'JPA' },
+                { name: 'Hibernate',      type: 'image', icon: 'assets/technologies-images/hibernate.svg' },
+                { name: 'JWT',            type: 'image', icon: 'assets/technologies-images/jwt-icon.svg' },
+                { name: 'Maven',          type: 'image',  icon: 'assets/technologies-images/maven.svg' },
+            ],
+        },
+
+        {
+            id: '03', codename: 'DATA-LAYER', label: '',
             isOpen: false,
             skills: [
                 { name: 'SQL', type: 'image', icon: 'assets/technologies-images/sql.svg' },
@@ -75,7 +77,7 @@ export class SkillsModalComponent {
             ],
         },
         {
-            id: '04', codename: 'DEVOPS-TOOLS', label: 'DevOps & Tools',
+            id: '04', codename: 'DEVOPS-TOOLS', label: '',
             isOpen: false,
             skills: [
                 { name: 'Git',         type: 'image', icon: 'assets/technologies-images/git.svg' },
@@ -84,7 +86,7 @@ export class SkillsModalComponent {
             ],
         },
         {
-            id: '05', codename: 'ARCHITECTURE', label: 'Architecture',
+            id: '05', codename: 'ARCHITECTURE', label: '',
             isOpen: false,
             skills: [
                 { name: 'MVC Pattern',       type: 'text', icon: 'MVC' },
@@ -98,18 +100,22 @@ export class SkillsModalComponent {
 
     toggle(cat: SkillCategory): void {
         cat.isOpen = !cat.isOpen;
+        this.cdr.markForCheck();
     }
 
     get totalSkills(): number {
         return this.categories.reduce((acc, c) => acc + c.skills.length, 0);
     }
 
-    get openCount(): number {
-        return this.categories.filter(c => c.isOpen).length;
+    expandAll(): void   {
+        this.categories.forEach(c => c.isOpen = true);
+        this.cdr.markForCheck();
     }
 
-    expandAll(): void   { this.categories.forEach(c => c.isOpen = true);  }
-    collapseAll(): void { this.categories.forEach(c => c.isOpen = false); }
+    collapseAll(): void {
+        this.categories.forEach(c => c.isOpen = false);
+        this.cdr.markForCheck();
+    }
 
     onBack(): void {
         this.modalService.closeModal();

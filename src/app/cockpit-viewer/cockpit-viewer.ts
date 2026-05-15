@@ -1378,14 +1378,14 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         const planeWidth = Math.max(0.001, worldWidth * PLANE_WIDTH_FACTOR);
         const planeHeight = Math.max(0.001, worldHeight * PLANE_HEIGHT_FACTOR);
 
-        // Items (orden de arriba a abajo): EXACTAMENTE 3
-        // Para agregar otro ítem en el futuro, añade aquí otro objeto { name: 'nuevo', idx: 3, color: 0xff00ff }
+        // Items (orden de arriba a abajo): EXACTAMENTE 5
+        // Para agregar otro ítem en el futuro, añade aquí otro objeto { name: 'nuevo', idx: 5, color: 0xff00ff }
         const liItems = [
-            { name: 'home', idx: 0, color: 0xffffff },
-            { name: 'projects', idx: 1, color: 0xff0000 },
-            { name: 'skills', idx: 2, color: 0x00ff00 },
-            { name: 'about', idx: 3, color: 0x0000ff },
-            { name: 'contact', idx: 4, color: 0xffff00 }
+            { name: 'projects', idx: 0, color: 0xff0000 },
+            { name: 'skills', idx: 1, color: 0x00ff00 },
+            { name: 'about', idx: 2, color: 0x0000ff },
+            { name: 'contact', idx: 3, color: 0xffff00 },
+            { name: 'home', idx: 4, color: 0xffffff }
         ] as const;
 
         liItems.forEach((item) => {
@@ -1669,7 +1669,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
 
         console.log('🎨 Pre-renderizando texturas de hover...');
 
-        const items = ['HOME', 'PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT'];
+        const items = ['PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT', 'HOME'];
 
         // Renderizar textura para cada estado (incluyendo sin hover = -1)
         for (let hoveredIndex = -1; hoveredIndex < items.length; hoveredIndex++) {
@@ -1706,16 +1706,16 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             document.body.appendChild(hostElement);
 
             // Crear el HTML del componente con hover aplicado
-            const items = ['HOME', 'PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT'];
+            const items = ['PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT', 'HOME'];
             const listHTML = items.map((item, index) => {
                 const color = index === hoveredIndex ? 'cyan' : 'red';
                 // Espacios exactos como en el componente HTML
                 let spacing = '';
-                if (index === 0) spacing = '[ HOME ]';
-                else if (index === 1) spacing = '[ PROJECTS ]';
-                else if (index === 2) spacing = '[ SKILLS ]';
-                else if (index === 3) spacing = '[ ABOUT ]';
-                else if (index === 4) spacing = '[ CONTACT ]';
+                if (index === 0) spacing = '[ PROJECTS ]';
+                else if (index === 1) spacing = '[ SKILLS ]';
+                else if (index === 2) spacing = '[ ABOUT ]';
+                else if (index === 3) spacing = '[ CONTACT ]';
+                else if (index === 4) spacing = '[ HOME ]';
                 return `<li class="main__options-li" style="color: ${color}; cursor: pointer; margin: 20px 0;">${spacing}</li>`;
             }).join('');
 
@@ -1799,7 +1799,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         document.body.appendChild(hostElement);
 
         // Crear el HTML del componente con hover aplicado
-        const items = ['HOME', 'PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT'];
+        const items = ['PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT', 'HOME'];
         const listHTML = items.map((item, index) => {
             const color = index === hoveredIndex ? 'cyan' : 'red';
             return `<li class="main__options-li" style="color: ${color}; cursor: pointer; margin: 20px 0;">[ ${item} ]</li>`;

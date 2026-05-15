@@ -11,12 +11,24 @@
         </div>
         <div class="skills__header-right">
             <span class="header-meta">TOTAL: {{ totalSkills }} MODULES</span>
-            <div class="header-controls">
-                <button class="ctrl-btn" (click)="expandAll()"   aria-label="Expandir todo">[ EXPAND ALL ]</button>
-                <button class="ctrl-btn" (click)="collapseAll()" aria-label="Colapsar todo">[ COLLAPSE ]</button>
-            </div>
         </div>
     </header>
+
+    <!-- ─── CONTROLES DE EXPANSIÓN ────────────────────────────── -->
+    <div class="skills__controls animate-fadein" style="--delay: 0.2s">
+        <button class="expand-btn expand-btn--primary" (click)="expandAll()" aria-label="Expandir todas las categorías">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+            <span>EXPAND ALL</span>
+        </button>
+        <button class="expand-btn expand-btn--secondary" (click)="collapseAll()" aria-label="Colapsar todas las categorías">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 12h18v2H3z"/>
+            </svg>
+            <span>COLLAPSE</span>
+        </button>
+    </div>
 
     <!-- ─── CATEGORÍAS ───────────────────────────────────────── -->
     <main class="skills__body">
@@ -49,40 +61,42 @@
                     </span>
                 </button>
 
-                <div
-                        class="category__body"
-                        [@collapse]="cat.isOpen ? 'open' : 'closed'"
-                        [id]="'cat-' + cat.id"
-                        role="list"
-                >
-                    <div class="skills__grid">
-                        @for (skill of cat.skills; track skill.name; let si = $index) {
-                            <article
-                                    class="skill-card"
-                                    [style.--si]="si"
-                                    role="listitem"
-                                    [attr.aria-label]="skill.name"
-                            >
-                                <div class="skill-card__icon" aria-hidden="true">
-                                    @if (skill.type === 'image') {
-                                        <img class="skill-card__image" [src]="skill.icon" [alt]="skill.name" />
-                                    } @else if (skill.type === 'svg') {
-                                        <svg class="skill-card__svg" viewBox="0 0 24 24">
-                                            <path [attr.d]="skill.icon"/>
-                                        </svg>
-                                    } @else {
-                                        <span class="skill-card__initials">{{ skill.icon }}</span>
-                                    }
-                                </div>
+                @if (cat.isOpen) {
+                    <div
+                            class="category__body"
+                            [@collapse]="cat.isOpen ? 'open' : 'closed'"
+                            [id]="'cat-' + cat.id"
+                            role="list"
+                    >
+                        <div class="skills__grid">
+                            @for (skill of cat.skills; track skill.name; let si = $index) {
+                                <article
+                                        class="skill-card"
+                                        [style.--si]="si"
+                                        role="listitem"
+                                        [attr.aria-label]="skill.name"
+                                >
+                                    <div class="skill-card__icon" aria-hidden="true">
+                                        @if (skill.type === 'image') {
+                                            <img class="skill-card__image" [src]="skill.icon" [alt]="skill.name" />
+                                        } @else if (skill.type === 'svg') {
+                                            <svg class="skill-card__svg" viewBox="0 0 24 24">
+                                                <path [attr.d]="skill.icon"/>
+                                            </svg>
+                                        } @else {
+                                            <span class="skill-card__initials">{{ skill.icon }}</span>
+                                        }
+                                    </div>
 
-                                <span class="skill-card__name">{{ skill.name }}</span>
+                                    <span class="skill-card__name">{{ skill.name }}</span>
 
-                                <!-- Solo esquina TL: reducir ruido, mantener identidad -->
-                                <span class="skill-card__c skill-card__c--tl" aria-hidden="true"></span>
-                            </article>
-                        }
+                                    <!-- Solo esquina TL: reducir ruido, mantener identidad -->
+                                    <span class="skill-card__c skill-card__c--tl" aria-hidden="true"></span>
+                                </article>
+                            }
+                        </div>
                     </div>
-                </div>
+                }
 
             </div>
         }

@@ -98,19 +98,7 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   z-index: 5;
 }
 
-.hud__corner {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border-color: rgba($accent, .55);   // ← antes: $accent sin alpha
-  border-style: solid;
-  animation: pulse-border 4s ease-in-out infinite;
 
-  &--tl { top: 14px; left: 14px;     border-width: 1.5px 0 0 1.5px; }
-  &--tr { top: 14px; right: 14px;    border-width: 1.5px 1.5px 0 0; }
-  &--bl { bottom: 14px; left: 14px;  border-width: 0 0 1.5px 1.5px; animation-delay: .3s; }
-  &--br { bottom: 14px; right: 14px; border-width: 0 1.5px 1.5px 0; animation-delay: .6s; }
-}
 
 .hud__line {
   position: absolute;

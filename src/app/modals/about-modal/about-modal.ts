@@ -37,9 +37,9 @@ export interface TimelineEntry {
 export class AboutComponent implements OnInit, AfterViewInit, OnDestroy {
 
     readonly NAME      = 'MATIAS OYHAMBURU';
-    readonly ROLE      = 'Fullstack Developer';
+    readonly ROLE      = 'DISPONIBLE';
     readonly PHOTO_URL = 'assets/about/photo.jpg';
-    readonly CV_URL    = 'assets/cv/matias-oyhamburu-cv.pdf';
+    readonly CV_URL    = 'assets/Matias Oyhamburu - CV.pdf';
     readonly CV_NAME   = 'matias-oyhamburu-cv.pdf';
 
     readonly BIO = `Soy un desarrollador Fullstack Junior con sólidas bases en
@@ -60,8 +60,6 @@ aprender nuevas tecnologías y resolver problemas reales.`;
     readonly timeline: TimelineEntry[] = [
         { year: '2025', title: 'Desarrollador Fullstack Junior', place: 'Freelance / Proyectos personales', type: 'exp' },
         { year: '2024', title: 'Técnico en Programación',        place: 'Universidad Tecnológica Nacional', type: 'edu' },
-        { year: '2023', title: 'Desarrollo Web Fullstack',       place: 'Coderhouse',                      type: 'edu' },
-        { year: '2022', title: 'Java + Spring Boot',             place: 'Autodidacta / Udemy',             type: 'edu' },
     ];
 
     @ViewChild('photoCanvas', { static: false })

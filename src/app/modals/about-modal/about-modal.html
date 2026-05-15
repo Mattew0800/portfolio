@@ -47,27 +47,9 @@
                     </div>
 
                     <div class="photo-frame__footer" aria-hidden="true">
-                        <span>{{ NAME }}</span>
-                        <span>{{ ROLE | uppercase }}</span>
+                        <span id="photo_name">{{ NAME }}</span>
+                        <span id="photo_role">{{ ROLE | uppercase }}</span>
                     </div>
-                </div>
-
-                <!-- Datos del sistema -->
-                <div class="sys-data animate-fadein" style="--delay: 0.5s" role="list" aria-label="Datos personales">
-                    <div class="sys-data__header" aria-hidden="true">// SYSTEM DATA</div>
-                    @for (field of dataFields; track field.key; let i = $index) {
-                        <div
-                                class="sys-data__row animate-fadein"
-                                style="--delay: {{ 0.55 + i * 0.06 }}s"
-                                role="listitem"
-                        >
-                            <span class="sys-data__key">{{ field.key }}</span>
-                            <span class="sys-data__dots" aria-hidden="true"></span>
-                            <span class="sys-data__value" [class.sys-data__value--highlight]="field.highlight">
-                            {{ field.value }}
-                        </span>
-                        </div>
-                    }
                 </div>
 
             </div>
