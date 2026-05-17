@@ -652,7 +652,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
 
 // Precargar líneas de interaction (aparecerán después)
                 const interactionLines = [
-                    'Accessing module: HOME',
+                    'Accessing module: EXIT',
                     'Loading component data',
                     'Rendering interface',
                     'Accessing module: PROJECTS',
@@ -1580,10 +1580,16 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                 this.hoveredPlane = intersectedPlane;
                 this.updateMainScreenWithHover(intersectedPlane.userData['index']);
             }
+
+            // Cambiar cursor a pointer cuando estamos sobre un elemento interactivo del menú
+            canvas.style.cursor = 'pointer';
         } else if (this.hoveredPlane !== null) {
             // Si no hay hover sobre planos pero había uno activo
             this.hoveredPlane = null;
             this.updateMainScreenWithHover(-1); // Sin hover
+
+            // Restaurar cursor a default cuando salimos de los elementos interactivos
+            canvas.style.cursor = 'default';
         }
 
         // Verificar intersecciones con las pantallas (recursivo = true para buscar en hijos también)
@@ -1613,12 +1619,23 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                 this.hoveredScreen = intersectedScreen;
                 this.focusOnScreen(intersectedScreen);
             }
+
+            // Cambiar cursor a pointer cuando estamos sobre otras pantallas (NO la main screen)
+            // Para la main screen, el cursor solo cambia cuando está sobre los elementos interactivos del menú
+            if (intersectedScreen.name !== 'Plane_3') {
+                canvas.style.cursor = 'pointer';
+            }
         } else {
             // Si no hay hover y había una pantalla seleccionada
             if (this.hoveredScreen !== null) {
                 console.log(`👋 Hover perdido, volviendo a posición original`);
                 this.hoveredScreen = null;
                 this.returnToOriginalPosition();
+            }
+
+            // Restaurar cursor solo si no estamos sobre elementos interactivos del menú
+            if (this.hoveredPlane === null) {
+                canvas.style.cursor = 'default';
             }
         }
     }
@@ -1669,7 +1686,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
 
         console.log('🎨 Pre-renderizando texturas de hover...');
 
-        const items = ['PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT', 'HOME'];
+        const items = ['PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT', 'EXIT'];
 
         // Renderizar textura para cada estado (incluyendo sin hover = -1)
         for (let hoveredIndex = -1; hoveredIndex < items.length; hoveredIndex++) {
@@ -1706,7 +1723,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             document.body.appendChild(hostElement);
 
             // Crear el HTML del componente con hover aplicado
-            const items = ['PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT', 'HOME'];
+            const items = ['PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT', 'EXIT'];
             const listHTML = items.map((item, index) => {
                 const color = index === hoveredIndex ? 'cyan' : 'red';
                 // Espacios exactos como en el componente HTML
@@ -1715,7 +1732,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                 else if (index === 1) spacing = '[ SKILLS ]';
                 else if (index === 2) spacing = '[ ABOUT ]';
                 else if (index === 3) spacing = '[ CONTACT ]';
-                else if (index === 4) spacing = '[ HOME ]';
+                else if (index === 4) spacing = '[ EXIT ]';
                 return `<li class="main__options-li" style="color: ${color}; cursor: pointer; margin: 20px 0;">${spacing}</li>`;
             }).join('');
 
@@ -1799,7 +1816,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         document.body.appendChild(hostElement);
 
         // Crear el HTML del componente con hover aplicado
-        const items = ['PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT', 'HOME'];
+        const items = ['PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT', 'EXIT'];
         const listHTML = items.map((item, index) => {
             const color = index === hoveredIndex ? 'cyan' : 'red';
             return `<li class="main__options-li" style="color: ${color}; cursor: pointer; margin: 20px 0;">[ ${item} ]</li>`;

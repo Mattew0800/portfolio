@@ -203,7 +203,7 @@ export class LogScreen implements OnInit, OnDestroy {
     }
 
     private moduleFromUrl(url: string): string | null {
-        if (url.includes('home'))     return 'HOME';
+        if (url.includes('exit'))    return 'EXIT';
         if (url.includes('projects')) return 'PROJECTS';
         if (url.includes('skills'))   return 'SKILLS';
         if (url.includes('about'))    return 'ABOUT';
