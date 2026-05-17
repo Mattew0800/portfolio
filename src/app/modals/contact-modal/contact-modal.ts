@@ -4,9 +4,11 @@ import {
     FormGroup,
     Validators,
     AbstractControl,
+    ReactiveFormsModule,
 } from '@angular/forms';
 import {CockpitScreenFrameComponent} from "../../components/cockpit-screen-frame/cockpit-screen-frame";
 import {ModalService} from "../../services/modal.service";
+import {EmailService} from "../../services/email.service";
 
 export interface ContactChannel {
     id:      string;
@@ -22,7 +24,8 @@ export interface ContactChannel {
     templateUrl: './contact-modal.html',
     styleUrls: ['./contact-modal.scss'],
     imports: [
-        CockpitScreenFrameComponent
+        CockpitScreenFrameComponent,
+        ReactiveFormsModule
     ]
 })
 export class ContactComponent implements OnInit {
@@ -67,9 +70,8 @@ export class ContactComponent implements OnInit {
     focusedField: string | null = null;
     cursorField: string = 'name'; // Campo donde mostrar el cursor
 
-    private readonly fieldOrder = ['name', 'email', 'subject', 'message'];
 
-    constructor(private fb: FormBuilder, public modalService: ModalService) {
+    constructor(private fb: FormBuilder, public modalService: ModalService, private emailService: EmailService) {
         this.form = this.fb.group({
             name:    ['', [Validators.required, Validators.minLength(2)]],
             email:   ['', [Validators.required, Validators.email]],
@@ -88,16 +90,15 @@ export class ContactComponent implements OnInit {
     }
 
     private updateCursorField(): void {
-        // Buscar el primer campo incompleto/inválido
-        for (const fieldName of this.fieldOrder) {
-            const control = this.field(fieldName);
-            if (control.invalid || !control.value) {
-                this.cursorField = fieldName;
-                return;
-            }
+        // Solo mostrar cursor en el campo enfocado si está vacío
+        // Una vez que tiene contenido, la animación se quita
+        if (this.focusedField) {
+            const control = this.field(this.focusedField);
+            // Mostrar cursor solo si el campo está vacío
+            this.cursorField = !control.value ? this.focusedField : '';
+        } else {
+            this.cursorField = '';
         }
-        // Si todos están válidos, no mostrar cursor
-        this.cursorField = '';
     }
 
     // ─── CAMPO HELPERS ────────────────────────────────────────────────────────
@@ -132,11 +133,22 @@ export class ContactComponent implements OnInit {
         // Registrar envío de formulario en el log
         this.modalService.logInteractionAction('Form submitted: Contact message');
 
-        // Simulación de envío — reemplazá con tu servicio real
-        setTimeout(() => {
+        // Enviar correo mediante EmailJS
+        this.emailService.sendContactEmail({
+            name: this.form.get('name')?.value,
+            email: this.form.get('email')?.value,
+            subject: this.form.get('subject')?.value,
+            message: this.form.get('message')?.value,
+        }).then(() => {
+            // Éxito
             this.formState = 'sent';
             this.form.reset();
-        }, 1800);
+        }).catch((error) => {
+            // Error
+            console.error('Error al enviar correo:', error);
+            this.formState = 'error';
+            this.modalService.logInteractionAction(`Form submission failed: ${error.message}`);
+        });
     }
 
     resetForm(): void {

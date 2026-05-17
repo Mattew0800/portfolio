@@ -655,6 +655,72 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 // ─────────────────────────────────────────────────────────────────
+// ESTADO: ERROR EN LA TRANSMISIÓN
+// ─────────────────────────────────────────────────────────────────
+.form-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 340px;
+  border: 1px solid rgba($red-err, .50);
+  background: rgba($red-err, .02);
+  animation: success-in .5s $ease-out-expo forwards;
+  text-align: center;
+  padding: 40px;
+
+  &__icon {
+    width: 52px; height: 52px;
+    border: 2px solid rgba($red-err, .65);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg { width: 28px; height: 28px; fill: rgba($red-err, .75); }
+  }
+
+  &__title {
+    font-family: $font-display;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: rgba($red-err, .75);
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  &__sub {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: rgba($accent, .60);
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  &__reset {
+    background: none;
+    border: 1px solid rgba($accent, .35);
+    color: rgba($accent, .65);
+    font-family: $font-mono;
+    font-size: 10px;
+    letter-spacing: 2px;
+    padding: 8px 18px;
+    text-transform: uppercase;
+    cursor: crosshair;
+    margin-top: 8px;
+    transition: color .2s, border-color .2s, background .2s;
+
+    &:hover {
+      color: $accent;
+      border-color: rgba($accent, .65);
+      background: rgba($accent, .06);
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
 // HUD INFERIOR
 // ─────────────────────────────────────────────────────────────────
 .sys-bar {

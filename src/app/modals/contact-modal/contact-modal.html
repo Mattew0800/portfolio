@@ -82,7 +82,7 @@
 
                 <form
                         class="form"
-                        formGroup="form"
+                        [formGroup]="form"
                         (submit)="onSubmit()"
                         novalidate
                         autocomplete="off"
@@ -91,7 +91,7 @@
                     <!-- Nombre -->
                     <div class="field" [class.field--focus]="focusedField === 'name'" [class.field--valid]="isValid('name')" [class.field--error]="isInvalid('name')">
                         <label class="field__label" for="f-name">
-                            <span class="field__tag">01</span> NOMBRE
+                            NOMBRE
                             @if (isValid('name')) { <span class="field__ok">✓</span> }
                         </label>
                         <div class="field__wrap">
@@ -116,7 +116,7 @@
                     <!-- Email -->
                     <div class="field" [class.field--focus]="focusedField === 'email'" [class.field--valid]="isValid('email')" [class.field--error]="isInvalid('email')">
                         <label class="field__label" for="f-email">
-                            <span class="field__tag">02</span> EMAIL
+                            EMAIL DE CONTACTO
                             @if (isValid('email')) { <span class="field__ok">✓</span> }
                         </label>
                         <div class="field__wrap">
@@ -141,7 +141,7 @@
                     <!-- Asunto -->
                     <div class="field" [class.field--focus]="focusedField === 'subject'" [class.field--valid]="isValid('subject')" [class.field--error]="isInvalid('subject')">
                         <label class="field__label" for="f-subject">
-                            <span class="field__tag">03</span> ASUNTO
+                            ASUNTO
                             @if (isValid('subject')) { <span class="field__ok">✓</span> }
                         </label>
                         <div class="field__wrap">
@@ -166,7 +166,7 @@
                     <!-- Mensaje -->
                     <div class="field field--textarea" [class.field--focus]="focusedField === 'message'" [class.field--valid]="isValid('message')" [class.field--error]="isInvalid('message')">
                         <label class="field__label" for="f-message">
-                            <span class="field__tag">04</span> MENSAJE
+                            MENSAJE
                             <span class="field__charcount">{{ charCount('message') }} / 20+</span>
                             @if (isValid('message')) { <span class="field__ok">✓</span> }
                         </label>
