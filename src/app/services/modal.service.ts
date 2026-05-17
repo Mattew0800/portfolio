@@ -11,13 +11,13 @@ export class ModalService {
 
   // Mapeo de nombres de modal a números de módulo
   private modalToModuleMap: { [key: string]: number } = {
-    'home': 1,
-    'projects': 2,
-    'skills': 3,
-    'about': 4,
-    'contact': 5,
-    'ship-modules': 0, // No tiene módulo asignado (es el mapa en sí)
-    'logs': 0           // No tiene módulo asignado
+    'projects': 1,       // Projects es el módulo 1
+    'skills': 2,         // Skills es el módulo 2
+    'about': 3,          // About es el módulo 3
+    'contact': 4,        // Contact es el módulo 4
+    'home': 5,           // Home/Exit es el módulo 5
+    'ship-modules': 0,   // No tiene módulo asignado (es el mapa en sí)
+    'logs': 0            // No tiene módulo asignado
   };
 
   // Mapeo de modalName a texto legible

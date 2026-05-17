@@ -11,7 +11,9 @@ export interface BootEntry {
   providedIn: 'root'
 })
 export class ModuleStateService {
-  private visitedModulesSubject = new BehaviorSubject<Set<number>>(new Set());
+  private isFirstLoad = true; // Control para la primera carga
+  private exitPressCount = 0; // Contador de veces que se presiona EXIT
+  private visitedModulesSubject = new BehaviorSubject<Set<number>>(this.loadVisitedModules());
   public visitedModules$: Observable<Set<number>> = this.visitedModulesSubject.asObservable();
 
   private bootLogHistorySubject = new BehaviorSubject<BootEntry[]>([]);
@@ -31,10 +33,53 @@ export class ModuleStateService {
 
   constructor() {}
 
+  private loadVisitedModules(): Set<number> {
+    // En la primera carga, no cargar módulos visitados del localStorage
+    if (this.isFirstLoad) {
+      this.isFirstLoad = false;
+      console.log('📍 Primera carga: ignorando módulos visitados del localStorage');
+      this.exitPressCount = 1; // Primera vez que está en EXIT (carga inicial)
+      return new Set(); // Retornar vacío en la primera carga
+    }
+
+    const stored = localStorage.getItem('visitedModules');
+    if (stored) {
+      try {
+        const arr = JSON.parse(stored);
+        console.log('📍 Cargando módulos visitados del localStorage:', arr);
+        return new Set(arr);
+      } catch (e) {
+        console.error('Error al cargar módulos visitados:', e);
+        return new Set();
+      }
+    }
+    return new Set();
+  }
+
+  private saveVisitedModules(modules: Set<number>): void {
+    try {
+      localStorage.setItem('visitedModules', JSON.stringify(Array.from(modules)));
+    } catch (e) {
+      console.error('Error al guardar módulos visitados:', e);
+    }
+  }
+
+  incrementExitPressCount(): number {
+    this.exitPressCount++;
+    console.log(`📊 EXIT presionado ${this.exitPressCount} veces`);
+    return this.exitPressCount;
+  }
+
+  getExitPressCount(): number {
+    return this.exitPressCount;
+  }
+
   setVisitedModule(moduleNumber: number): void {
     const visitedModules = new Set(this.visitedModulesSubject.value);
     visitedModules.add(moduleNumber);
     this.visitedModulesSubject.next(visitedModules);
+    this.saveVisitedModules(visitedModules);
+    console.log(`💾 Módulo ${moduleNumber} guardado en localStorage. Visitados: ${Array.from(visitedModules).join(', ')}`);
   }
 
   getVisitedModules(): Set<number> {

@@ -19,11 +19,11 @@ export class ShipModalComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Para el template
   modules = [
-    { number: 1, label: 'Home', visited: false },
-    { number: 2, label: 'Projects', visited: false },
-    { number: 3, label: 'Skills', visited: false },
-    { number: 4, label: 'About', visited: false },
-    { number: 5, label: 'Contact', visited: false }
+    { number: 1, label: 'Projects', visited: false },
+    { number: 2, label: 'Skills', visited: false },
+    { number: 3, label: 'About', visited: false },
+    { number: 4, label: 'Contact', visited: false },
+    { number: 5, label: 'Exit', visited: false }
   ];
   visitedModules = new Set<number>();
 
@@ -42,8 +42,64 @@ export class ShipModalComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
+    // Forzar la recarga de los módulos visitados desde el estado
     const currentVisitedModules = this.moduleStateService.getVisitedModules();
+    console.log(`🔄 Recargando módulos visitados: ${Array.from(currentVisitedModules).join(', ') || 'ninguno'}`);
     this.updateModuleVisibility(currentVisitedModules);
+    this.setupModuleClickListeners();
+  }
+
+  private setupModuleClickListeners(): void {
+    if (!this.svgElement) {
+      console.error('❌ SVG Element NO disponible');
+      return;
+    }
+
+    const svg = this.svgElement.nativeElement as SVGSVGElement;
+    const moduleRoutes: { [key: number]: string } = {
+      1: 'projects',
+      2: 'skills',
+      3: 'about',
+      4: 'contact',
+      5: 'exit'  // EXIT action
+    };
+
+    console.log('🔗 Configurando listeners de click en módulos...');
+
+    for (let i = 1; i <= 5; i++) {
+      const modulePath = svg.getElementById(`MODULO ${i}`) as SVGPathElement;
+      if (modulePath) {
+        modulePath.style.cursor = 'pointer';
+        modulePath.addEventListener('click', () => {
+          console.log(`🚀 ¡CLICK DETECTADO EN MÓDULO ${i}!`);
+          this.handleModuleClick(i, moduleRoutes[i]);
+        });
+        console.log(`✅ Listener registrado para MÓDULO ${i}`);
+      } else {
+        console.warn(`❌ MÓDULO ${i} NO ENCONTRADO en SVG`);
+      }
+    }
+  }
+
+  private handleModuleClick(moduleNumber: number, action: string): void {
+    // Marcar como visitado
+    this.moduleStateService.setVisitedModule(moduleNumber);
+    console.log(`✅ Módulo ${moduleNumber} marcado como visitado`);
+
+    // Forzar la actualización visual inmediata
+    this.updateModuleVisibility(this.moduleStateService.getVisitedModules());
+
+    if (action === 'exit') {
+      // Si es EXIT, esperar un poco y luego cerrar el modal
+      // Esto asegura que el estado se guarde correctamente
+      setTimeout(() => {
+        console.log(`🚀 Ejecutando EXIT después de marcar como visitado`);
+        this.onBack();
+      }, 100);
+    } else {
+      // Si es otro módulo, abrir el modal correspondiente
+      this.modalService.openModal(action);
+    }
   }
 
   ngOnDestroy(): void {
@@ -96,6 +152,21 @@ export class ShipModalComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onBack(): void {
+    console.log('👋 Botón BACK presionado - Cerrando modal...');
+
+    // Incrementar contador de veces que se presiona EXIT
+    const pressCount = this.moduleStateService.incrementExitPressCount();
+
+    // Solo marcar como visitado la SEGUNDA VEZ en adelante
+    // (ignorar la primera vez que es la carga inicial en HOME)
+    if (pressCount >= 2) {
+      console.log('✅ EXIT presionado la segunda vez - marcando módulo 5 como visitado');
+      this.moduleStateService.setVisitedModule(5);
+      this.updateModuleVisibility(this.moduleStateService.getVisitedModules());
+    } else {
+      console.log('⏭️  Primera vez en EXIT (carga inicial) - ignorando');
+    }
+
     this.modalService.closeModal();
   }
 }
