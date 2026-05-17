@@ -453,7 +453,7 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
   &__cursor {
     position: absolute;
-    right: 12px; top: 50%;
+    left: 12px; top: 50%;
     transform: translateY(-50%);
     width: 2px; height: 14px;
     background: $accent;

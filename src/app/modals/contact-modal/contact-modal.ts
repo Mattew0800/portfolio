@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
     FormBuilder,
     FormGroup,
@@ -25,7 +25,7 @@ export interface ContactChannel {
         CockpitScreenFrameComponent
     ]
 })
-export class ContactComponent {
+export class ContactComponent implements OnInit {
 
     // ─── DATOS — editá con los tuyos ─────────────────────────────────────────
     readonly AVAILABILITY_MSG = 'Disponible para oportunidades laborales';
@@ -65,6 +65,9 @@ export class ContactComponent {
     form: FormGroup;
     formState: 'idle' | 'sending' | 'sent' | 'error' = 'idle';
     focusedField: string | null = null;
+    cursorField: string = 'name'; // Campo donde mostrar el cursor
+
+    private readonly fieldOrder = ['name', 'email', 'subject', 'message'];
 
     constructor(private fb: FormBuilder, public modalService: ModalService) {
         this.form = this.fb.group({
@@ -73,6 +76,28 @@ export class ContactComponent {
             subject: ['', [Validators.required, Validators.minLength(4)]],
             message: ['', [Validators.required, Validators.minLength(20)]],
         });
+    }
+
+    ngOnInit(): void {
+        // Escuchar cambios en todos los campos para actualizar el cursor dinámicamente
+        this.form.valueChanges.subscribe(() => {
+            this.updateCursorField();
+        });
+        // Inicializar el cursor en el primer campo
+        this.updateCursorField();
+    }
+
+    private updateCursorField(): void {
+        // Buscar el primer campo incompleto/inválido
+        for (const fieldName of this.fieldOrder) {
+            const control = this.field(fieldName);
+            if (control.invalid || !control.value) {
+                this.cursorField = fieldName;
+                return;
+            }
+        }
+        // Si todos están válidos, no mostrar cursor
+        this.cursorField = '';
     }
 
     // ─── CAMPO HELPERS ────────────────────────────────────────────────────────

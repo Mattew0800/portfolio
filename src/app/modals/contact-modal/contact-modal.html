@@ -104,7 +104,9 @@
                                     (focus)="focusedField = 'name'"
                                     (blur)="focusedField = null"
                             />
-                            <span class="field__cursor" aria-hidden="true"></span>
+                            @if (cursorField === 'name') {
+                                <span class="field__cursor" aria-hidden="true"></span>
+                            }
                         </div>
                         @if (isInvalid('name')) {
                             <span class="field__error">[ CAMPO REQUERIDO — MÍN. 2 CARACTERES ]</span>
@@ -127,7 +129,9 @@
                                     (focus)="focusedField = 'email'"
                                     (blur)="focusedField = null"
                             />
-                            <span class="field__cursor" aria-hidden="true"></span>
+                            @if (cursorField === 'email') {
+                                <span class="field__cursor" aria-hidden="true"></span>
+                            }
                         </div>
                         @if (isInvalid('email')) {
                             <span class="field__error">[ EMAIL INVÁLIDO ]</span>
@@ -150,7 +154,9 @@
                                     (focus)="focusedField = 'subject'"
                                     (blur)="focusedField = null"
                             />
-                            <span class="field__cursor" aria-hidden="true"></span>
+                            @if (cursorField === 'subject') {
+                                <span class="field__cursor" aria-hidden="true"></span>
+                            }
                         </div>
                         @if (isInvalid('subject')) {
                             <span class="field__error">[ CAMPO REQUERIDO ]</span>
@@ -174,6 +180,9 @@
                                     (focus)="focusedField = 'message'"
                                     (blur)="focusedField = null"
                             ></textarea>
+                            @if (cursorField === 'message') {
+                                <span class="field__cursor" aria-hidden="true"></span>
+                            }
                         </div>
                         @if (isInvalid('message')) {
                             <span class="field__error">[ MÍN. 20 CARACTERES ]</span>
