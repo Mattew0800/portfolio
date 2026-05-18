@@ -18,7 +18,7 @@ export class LogScreen implements OnInit, OnDestroy {
 
     readonly NAME  = 'MATIAS OYHAMBURU';
     readonly ROLE  = 'Fullstack Developer';
-    readonly STACK = 'Angular / TypeScript / CSS';
+    readonly STACK = 'Spring Boot · Angular · TypeScript';
 
     private readonly BOOT_STEPS = [
         'Initializing core systems',
