@@ -38,15 +38,17 @@ export class AboutComponent implements OnInit, AfterViewInit, OnDestroy {
 
     readonly NAME      = 'MATIAS OYHAMBURU';
     readonly ROLE      = 'DISPONIBLE';
-    readonly PHOTO_URL = 'assets/about/photo.jpg';
+    readonly PHOTO_URL = 'assets/about/photo.jpeg';
     readonly CV_URL    = 'assets/Matias Oyhamburu - CV.pdf';
     readonly CV_NAME   = 'matias-oyhamburu-cv.pdf';
 
-    readonly BIO = `Soy un desarrollador Fullstack Junior con sólidas bases en
-Java y Spring Boot en el backend, y Angular en el frontend.
-Me apasiona construir soluciones robustas, escalables y con
-una experiencia de usuario memorable. Siempre buscando
-aprender nuevas tecnologías y resolver problemas reales.`;
+    readonly BIO = `Soy Desarrollador Full Stack Junior egresado de la Tecnicatura Universitaria en Programación (UTN), con experiencia y especial interés en el desarrollo frontend utilizando Angular, TypeScript, RxJS y SCSS para construir aplicaciones web modernas, escalables y mantenibles, con foco en la experiencia de usuario y la calidad técnica.
+
+    Cuento con formación en desarrollo backend utilizando Java y Spring Boot para la construcción de APIs REST, lógica de negocio y persistencia de datos. Además, poseo una sólida formación en bases de datos y arquitectura de software.
+    
+    Trabajo bajo metodologías ágiles como Scrum y utilizo herramientas como Git para control de versiones y trabajo colaborativo.
+    
+    Busco incorporarme a un equipo IT donde pueda aplicar mis conocimientos, continuar desarrollándome profesionalmente y participar en proyectos de impacto real.`;
 
     readonly dataFields: DataField[] = [
         { key: 'NOMBRE',      value: 'MATIAS OYHAMBURU'      },
