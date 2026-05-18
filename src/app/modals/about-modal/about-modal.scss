@@ -531,7 +531,7 @@ $ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
   &__badge {
     font-size: 8px;                         // era 7px
     letter-spacing: 1.5px;
-    color: rgba($accent, .65);             // era .50
+    color: $accent-glow;
     border: 1px solid rgba($accent, .22);
     padding: 2px 6px;
     text-transform: uppercase;

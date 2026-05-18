@@ -148,19 +148,23 @@
                     <div class="panel__info">
 
                         <div class="panel__section">
+                            <span class="panel__label">// DESCRIPTION</span>
+                            <p class="panel__desc">{{ selectedProject.description }}</p>
+                        </div>
+
+                        <div class="panel__section">
                             <span class="panel__label">// BRIEF</span>
                             <p class="panel__desc">{{ selectedProject.longDesc }}</p>
                         </div>
 
-                        <div class="panel__meta-row">
-                            <div class="panel__section panel__section--inline">
-                                <span class="panel__label">// ROLE</span>
-                                <span class="panel__meta-value">{{ selectedProject.role }}</span>
-                            </div>
-                            <div class="panel__section panel__section--inline">
-                                <span class="panel__label">// DATE</span>
-                                <span class="panel__meta-value">{{ selectedProject.date }}</span>
-                            </div>
+                        <div class="panel__section panel__section--inline">
+                            <span class="panel__label">// ROLE</span>
+                            <span class="panel__meta-value">{{ selectedProject.role }}</span>
+                        </div>
+
+                        <div class="panel__section panel__section--inline">
+                            <span class="panel__label">// DATE</span>
+                            <span class="panel__meta-value">{{ selectedProject.date }}</span>
                         </div>
 
                         <div class="panel__section">

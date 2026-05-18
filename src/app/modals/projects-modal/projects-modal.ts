@@ -60,8 +60,11 @@ export class ProjectsComponent implements OnInit, OnDestroy {
             status: 'IN DEVELOPMENT',
             role: 'Frontend Developer',
             date: '2026',
-            description: 'AGREGAR DESCRIPCION',
-            longDesc: 'AGREGAR DESCRIPCION',
+            description: 'Plataforma SaaS Multi Tenant para Complejos Deportivos',
+            longDesc: 'Desarrollo de una plataforma web multi tenant para gestión de canchas y reservas online, permitiendo que cada complejo personalice su identidad visual y configuración.\n' +
+                '\n' +
+                'Diseño UI/UX mobile-first realizado utilizando Figma. El sistema incluye panel administrativo para gestión de turnos, clientes, pagos, stock y operaciones internas, además de una plataforma pública para reservas online y gestión de usuarios.' +
+                ' El sistema se encuentra en desarrollo activo.',
 
             stack: ['Angular', 'TypeScript', 'HTML', 'SCSS', 'RxJS'],
             images: ['assets/projects/aztk/onboarding.png','assets/projects/aztk/landing.png','assets/projects/aztk/login.png','assets/projects/aztk/password.png','assets/projects/aztk/register.png','assets/projects/aztk/home.png','assets/projects/aztk/reservar.png','assets/projects/aztk/detalle-reserva.png','assets/projects/aztk/hoyjugas.png'],
@@ -117,12 +120,12 @@ export class ProjectsComponent implements OnInit, OnDestroy {
             status: 'COMPLETED',
             role: 'Backend Developer',
             date: '2024',
-            description: 'Desarrollo de una aplicación en Java para la gestión de correos electrónicos',
-            longDesc: 'Desarrollo de una aplicación en Java para la gestión de correos electrónicos, con modelado de entidades, manejo de\n' +
+            description: 'Desarrollo de proyecto académico en Java para la gestión de correos electrónicos',
+            longDesc: 'Desarrollo de proyecto académico en Java para la gestión de correos electrónicos, con modelado de entidades, manejo de\n' +
                 'colecciones y lógica de negocio orientada a la administración de mensajes. Proyecto estructurado en múltiples clases,\n' +
                 'aplicando programación orientada a objetos y buenas prácticas de organización del código.\n',
             stack: ['Java (POO)', 'Colecciones', 'JSON', 'Persistencia en archivos', 'Excepciones'],
-            images: ['assets/projects/zmail/zmail.png'],
+            images: ['assets/projects/zmail/zmail.png','assets/projects/zmail/zmail-logo.png'],
             github: 'https://github.com/Mattew0800/ZMAIL-MANAGER',
             demo: null,
         },
@@ -145,6 +148,7 @@ export class ProjectsComponent implements OnInit, OnDestroy {
         this.selectedProject = project;
         this.isDetailOpen    = true;
         this.isClosing       = false;
+        this.currentImageIndex = 0;
     }
 
     closeDetail(): void {
