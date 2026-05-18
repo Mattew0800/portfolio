@@ -1,23 +1,67 @@
-<div class="screen-container">
-  <button class="back-button" (click)="goBack()">← Volver</button>
+<app-cockpit-screen-frame (back)="onBack()">
+    <div class="boot-screen" #bootScreen>
+        <div class="boot-panel">
 
-  <h1 class="screen-title">🛠️ SKILLS</h1>
+            <div class="boot-panel__topbar" aria-hidden="true">
+                <span class="boot-panel__topbar-label">terminal</span>
+                <span class="boot-panel__topbar-dot"></span>
+            </div>
 
-  <div class="skills-section">
-    <h2>Frontend:</h2>
-    <p>Angular • React • Vue.js</p>
-    <p>TypeScript • Three.js</p>
-  </div>
+            <!-- ── Boot Sequence Section ────────────────────── -->
+            <p class="boot-panel__section-label">Boot Sequence</p>
 
-  <div class="skills-section">
-    <h2>Backend:</h2>
-    <p>Node.js • Python • MongoDB</p>
-  </div>
+            <ol class="boot-logs" aria-label="Boot sequence log">
+                @for (entry of bootEntries; track entry.id) {
+                    <li class="boot-log">
+                        <span class="boot-log__arrow" aria-hidden="true">→</span>
+                        <span class="boot-log__text">{{ entry.text }}</span>
+                        @if (entry.status === 'ok') {
+                            <span class="boot-log__status" aria-label="OK">OK</span>
+                        } @else if (entry.status === 'pending') {
+                            <span class="boot-log__pending" aria-hidden="true">...</span>
+                        }
+                    </li>
+                }
+            </ol>
 
-  <div class="skills-section">
-    <h2>Contacto:</h2>
-    <p>matias.asd</p>
-    <p>github.com/matias</p>
-  </div>
-</div>
+            @if (showIdentity && interactionEntries.length === 1) {
+                <div class="boot-divider" aria-hidden="true"></div>
 
+                <div class="boot-identity" aria-label="Developer identity">
+                    <p class="boot-identity__name">{{ NAME }}</p>
+                    <p class="boot-identity__role">{{ ROLE }}</p>
+                    <p class="boot-identity__stack">{{ STACK }}</p>
+                </div>
+
+                @if (showReady) {
+                    <div class="boot-ready" role="status" aria-live="polite">
+                        <span class="boot-ready__text">System ready</span>
+                        <span class="boot-ready__cursor" aria-hidden="true"></span>
+                    </div>
+                }
+            }
+
+            <!-- ── Interaction Logs Section ────────────────── -->
+            @if (interactionEntries.length > 1) {
+                <div class="boot-divider" aria-hidden="true"></div>
+
+                <p class="boot-panel__section-label">Interaction Logs</p>
+
+                <ol class="boot-logs" aria-label="Interaction logs">
+                    @for (entry of interactionEntries; track entry.id) {
+                        <li class="boot-log">
+                            <span class="boot-log__arrow" aria-hidden="true">→</span>
+                            <span class="boot-log__text">{{ entry.text }}</span>
+                            @if (entry.status === 'ok') {
+                                <span class="boot-log__status" aria-label="OK">OK</span>
+                            } @else if (entry.status === 'pending') {
+                                <span class="boot-log__pending" aria-hidden="true">...</span>
+                            }
+                        </li>
+                    }
+                </ol>
+            }
+
+        </div>
+    </div>
+</app-cockpit-screen-frame>

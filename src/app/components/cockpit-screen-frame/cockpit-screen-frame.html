@@ -1,0 +1,58 @@
+<!-- cockpit-screen-frame.component.html -->
+<div class="csf-outer" [class.csf--powered-on]="poweredOn">
+
+    <!-- Bisel superior: barra de estado del sistema -->
+    <div class="csf-status-bar">
+
+    </div>
+
+    <!-- Bisel principal + pantalla -->
+    <div class="csf-bezel">
+
+        <!-- Esquinas metálicas decorativas (puro CSS en el SCSS) -->
+        <div class="csf-corner csf-corner--tl" aria-hidden="true"></div>
+        <div class="csf-corner csf-corner--tr" aria-hidden="true"></div>
+        <div class="csf-corner csf-corner--bl" aria-hidden="true"></div>
+        <div class="csf-corner csf-corner--br" aria-hidden="true"></div>
+
+        <!-- Pantalla activa -->
+        <div class="csf-screen">
+            <!-- Scanline overlay -->
+            <div class="csf-scanlines" aria-hidden="true"></div>
+            <!-- Vignette interno -->
+            <div class="csf-vignette" aria-hidden="true"></div>
+            <!-- Capa de encendido -->
+            <div class="csf-power-overlay" aria-hidden="true"></div>
+            <!-- Contenido dinámico -->
+            <div class="csf-content">
+                <ng-content></ng-content>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Panel inferior: botón RETURN + indicadores -->
+    <div class="csf-bottom-panel">
+        <div class="csf-bottom-left">
+            <button
+                    class="csf-return-btn"
+                    (click)="onBack()"
+                    aria-label="Return to previous screen">
+                <span class="csf-return-icon" aria-hidden="true"></span>
+                <span>RETURN</span>
+            </button>
+        </div>
+        <div class="csf-bottom-center">
+            <div class="csf-vu-bar">
+        <span *ngFor="let s of vuSegments; let i = index"
+              class="csf-vu-seg"
+              [style.animation-delay]="i * 80 + 'ms'">
+        </span>
+            </div>
+        </div>
+        <div class="csf-bottom-right">
+            <span class="csf-label csf-label--dim"> &nbsp;▪&nbsp;COCKPIT SCREEN</span>
+        </div>
+    </div>
+
+</div>

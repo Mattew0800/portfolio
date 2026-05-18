@@ -1,0 +1,109 @@
+<app-cockpit-screen-frame (back)="onBack()">
+<section class="skills">
+
+
+
+    <!-- ─── HEADER ───────────────────────────────────────────── -->
+    <header class="skills__header animate-fadein" style="--delay: 0.1s">
+        <div class="skills__header-left">
+            <span class="section-tag">// CAPABILITY INDEX</span>
+            <h2 class="section-title">SKILLS</h2>
+        </div>
+        <div class="skills__header-right">
+            <span class="header-meta">TOTAL: {{ totalSkills }} MODULES</span>
+        </div>
+    </header>
+
+    <!-- ─── CONTROLES DE EXPANSIÓN ────────────────────────────── -->
+    <div class="skills__controls animate-fadein" style="--delay: 0.2s">
+        <button class="expand-btn expand-btn--primary" (click)="expandAll()" aria-label="Expandir todas las categorías">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+            <span>EXPAND ALL</span>
+        </button>
+        <button class="expand-btn expand-btn--secondary" (click)="collapseAll()" aria-label="Colapsar todas las categorías">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M3 12h18v2H3z"/>
+            </svg>
+            <span>COLLAPSE</span>
+        </button>
+    </div>
+
+    <!-- ─── CATEGORÍAS ───────────────────────────────────────── -->
+    <main class="skills__body">
+
+        @for (cat of categories; track cat.id; let i = $index) {
+            <div class="category animate-fadein" style="--delay: {{ 0.15 + i * 0.1 }}s">
+
+                <button
+                        class="category__header"
+                        [class.category__header--open]="cat.isOpen"
+                        (click)="toggle(cat)"
+                        [attr.aria-expanded]="cat.isOpen"
+                        [attr.aria-controls]="'cat-' + cat.id"
+                >
+                    <span class="category__id" aria-hidden="true">{{ cat.id }}</span>
+
+                    <span class="category__name-block">
+                        <span class="category__codename">{{ cat.codename }}</span>
+                        <span class="category__label">{{ cat.label }}</span>
+                    </span>
+
+                    <span class="category__count">{{ cat.skills.length }} ITEMS</span>
+
+                    <span class="category__status" aria-hidden="true">
+                        @if (cat.isOpen) { ● LOADED } @else { ○ STANDBY }
+                    </span>
+
+                    <span class="category__chevron" [class.category__chevron--open]="cat.isOpen" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+                    </span>
+                </button>
+
+                @if (cat.isOpen) {
+                    <div
+                            class="category__body"
+                            [@collapse]="cat.isOpen ? 'open' : 'closed'"
+                            [id]="'cat-' + cat.id"
+                            role="list"
+                    >
+                        <div class="skills__grid">
+                            @for (skill of cat.skills; track skill.name; let si = $index) {
+                                <article
+                                        class="skill-card"
+                                        [style.--si]="si"
+                                        role="listitem"
+                                        [attr.aria-label]="skill.name"
+                                >
+                                    <div class="skill-card__icon" aria-hidden="true">
+                                        @if (skill.type === 'image') {
+                                            <img class="skill-card__image" [src]="skill.icon" [alt]="skill.name" />
+                                        } @else if (skill.type === 'svg') {
+                                            <svg class="skill-card__svg" viewBox="0 0 24 24">
+                                                <path [attr.d]="skill.icon"/>
+                                            </svg>
+                                        } @else {
+                                            <span class="skill-card__initials">{{ skill.icon }}</span>
+                                        }
+                                    </div>
+
+                                    <span class="skill-card__name">{{ skill.name }}</span>
+
+                                    <!-- Solo esquina TL: reducir ruido, mantener identidad -->
+                                    <span class="skill-card__c skill-card__c--tl" aria-hidden="true"></span>
+                                </article>
+                            }
+                        </div>
+                    </div>
+                }
+
+            </div>
+        }
+
+    </main>
+
+
+
+</section>
+</app-cockpit-screen-frame>

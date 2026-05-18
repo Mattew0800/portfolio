@@ -1,0 +1,668 @@
+// ─────────────────────────────────────────────────────────────────
+// TOKENS
+// ─────────────────────────────────────────────────────────────────
+$bg:           #0a0204;
+$accent:       #e8604c;
+$accent-glow:  #ff8070;
+$cyan:         #01F1F1;
+$cyan-dim:     rgba(1, 241, 241, 0.80);   // era .65 — subido para legibilidad
+$green:        #39ff8a;
+$green-dim:    rgba(57, 255, 138, 0.7);
+$surface:      rgba(232, 96, 76, 0.04);
+$border:       rgba(232, 96, 76, 0.18);
+$text-hud:     rgba(232, 96, 76, 0.30);
+
+// Tokens de texto — nueva escala de contraste
+$text-primary:   rgba(#fff, 0.92);   // títulos, datos clave
+$text-secondary: rgba(#fff, 0.78);   // cuerpo, valores
+$text-meta:      rgba(#fff, 0.50);   // subtextos, lugar
+$accent-label:   rgba($accent, 0.70); // tags, keys
+$accent-meta:    rgba($accent, 0.52); // header-meta, hints
+
+$font-display: 'Orbitron', monospace;
+$font-mono:    'Share Tech Mono', monospace;
+
+$ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+$ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+// ─────────────────────────────────────────────────────────────────
+// ANIMACIONES
+// ─────────────────────────────────────────────────────────────────
+@keyframes fadein-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes pulse-border {
+  0%, 100% { opacity: .35; }
+  50%       { opacity: .75; }
+}
+
+@keyframes scan { from { top: -2px; } to { top: 100%; } }
+
+@keyframes photo-scan {
+  0%   { top: -4px; opacity: .4; }
+  95%  { top: 100%; opacity: .4; }
+  100% { top: 100%; opacity: 0;  }
+}
+
+@keyframes img-reveal {
+  from { clip-path: inset(0 0 100% 0); filter: brightness(.4) saturate(0); }
+  to   { clip-path: inset(0 0 0% 0);   filter: brightness(.88) saturate(.8); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+@keyframes tl-slide {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0);     }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// UTILIDAD
+// ─────────────────────────────────────────────────────────────────
+.animate-fadein {
+  opacity: 0;
+  animation: fadein-up .8s $ease-in-out forwards var(--delay, 0s);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// COMPONENTE RAÍZ
+// ─────────────────────────────────────────────────────────────────
+.about {
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  background: $bg;
+  display: flex;
+  flex-direction: column;
+  padding: 48px 64px 80px;
+  font-family: $font-mono;
+  cursor: crosshair;
+  overflow-x: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 50% at 50% 20%, rgba(180, 40, 15, 0.10) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// HUD — reducido para no competir con contenido
+// ─────────────────────────────────────────────────────────────────
+.hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.hud__corner {
+  position: absolute;
+  width: 20px; height: 20px;
+  border-color: $accent; border-style: solid;
+  animation: pulse-border 4s ease-in-out infinite;
+  opacity: .55;                              // era implícito al 100%
+
+  &--tl { top: 14px; left: 14px;     border-width: 1.5px 0 0 1.5px; }
+  &--tr { top: 14px; right: 14px;    border-width: 1.5px 1.5px 0 0; }
+  &--bl { bottom: 14px; left: 14px;  border-width: 0 0 1.5px 1.5px; animation-delay: .3s; }
+  &--br { bottom: 14px; right: 14px; border-width: 0 1.5px 1.5px 0; animation-delay: .6s; }
+}
+
+.hud__line {
+  position: absolute; left: 0; right: 0; height: 1px;
+  // Opacidad bajada de .10 a .06 — menos ruido
+  background: linear-gradient(90deg, transparent 0%, rgba($accent, .06) 20%, rgba($accent, .06) 80%, transparent 100%);
+  &--top    { top: 10%;    }
+  &--bottom { bottom: 10%; }
+}
+
+.hud__scanline {
+  position: absolute; top: 0; left: 0; width: 100%; height: 1px;
+  background: rgba($accent, .025);           // era .05 — más sutil
+  animation: scan 10s linear 1s infinite;   // más lento, menos distracción
+}
+
+// ─────────────────────────────────────────────────────────────────
+// HEADER
+// ─────────────────────────────────────────────────────────────────
+.about__header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 48px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid $border;
+}
+
+.section-tag {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: rgba($accent-glow, .90);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.section-title {
+  font-family: $font-display;
+  font-size: clamp(22px, 4vw, 36px);
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  text-shadow: 0 0 24px rgba(232, 96, 76, 0.30);
+  margin: 0;
+}
+
+.header-meta {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: $accent-meta;                      // era $text-hud = .30 — subido a .52
+  text-transform: uppercase;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// GRID PRINCIPAL
+// ─────────────────────────────────────────────────────────────────
+.about__grid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 48px;
+  align-items: start;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// COLUMNA IZQUIERDA
+// ─────────────────────────────────────────────────────────────────
+.col-left {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+// ─── Marco de foto ───────────────────────────────────────────────
+.photo-frame {
+  position: relative;
+  background: rgba($accent, .03);
+  border: 1px solid $border;
+  padding: 8px 8px 0;
+  transition: border-color .4s;
+
+  &--ready {
+    border-color: rgba($accent, .35);
+  }
+
+  &__c {
+    position: absolute;
+    width: 12px; height: 12px;
+    border-color: $accent; border-style: solid;
+    z-index: 2;
+    opacity: .6;
+
+    &--tl { top: -1px;  left: -1px;  border-width: 2px 0 0 2px; }
+    &--tr { top: -1px;  right: -1px; border-width: 2px 2px 0 0; }
+    &--bl { bottom:0;left: -1px;  border-width: 0 0 2px 2px; }
+    &--br { bottom:0;right: -1px; border-width: 0 2px 2px 0; }
+  }
+
+  &__scan-bar {
+    height: 2px;
+    background: rgba($accent, .12);
+    margin-bottom: 6px;
+    overflow: hidden;
+  }
+
+  &__scan-fill {
+    height: 100%;
+    background: linear-gradient(90deg, $accent, $accent-glow);
+    transition: width .08s linear;
+    box-shadow: 0 0 6px rgba($accent, .5);
+  }
+
+  &__scan-label {
+    display: block;
+    font-size: 8px;
+    letter-spacing: 2px;
+    color: $accent-label;                   // era .50, ahora .70
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    min-height: 14px;
+  }
+
+  &__img-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: #0d0204;
+  }
+
+  &__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 85% center;
+    display: block;
+    opacity: 0;
+    filter: brightness(.88) saturate(.8);
+    transition: opacity .1s;
+
+    &--visible {
+      opacity: 1;
+      animation: img-reveal .8s $ease-in-out forwards;
+    }
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 3px,
+                    rgba(0, 0, 0, 0.04) 3px,              // era .06
+                    rgba(0, 0, 0, 0.04) 4px
+    );
+    pointer-events: none;
+    z-index: 1;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      height: 2px;
+      background: rgba($accent, .08);        // era .12
+      animation: photo-scan 5s linear 1.2s infinite; // más lento
+    }
+  }
+
+  &__fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: rgba($accent, .30);
+    text-transform: uppercase;
+  }
+
+  // MEJORA: 7px → 9px, opacity .40 → .58
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 4px 11px;
+    font-size: 9px;                         // era 7px — ilegible
+    letter-spacing: 2px;
+    color: rgba($accent, .58);              // era .40
+    text-transform: uppercase;
+    border-top: 1px solid rgba($accent, .12);
+  }
+}
+
+// ─── System data ─────────────────────────────────────────────────
+.sys-data {
+  border: 1px solid $border;
+  background: rgba($accent, .02);
+  padding: 16px;
+
+  &__header {
+    font-size: 8px;
+    letter-spacing: 3px;
+    color: $accent-label;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba($accent, .10);
+  }
+
+  &__row {
+    display: flex;
+    align-items: baseline;
+    gap: 0;
+    padding: 6px 0;                         // era 5px
+    border-bottom: 1px solid rgba($accent, .08); // era .06
+    transition: background .2s;
+
+    &:last-child { border-bottom: none; }
+
+    // Hover sutil para confirmar escaneabilidad
+    &:hover {
+      background: rgba($accent, .04);
+      margin: 0 -8px;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+  }
+
+  // MEJORA: 8px → 9px, opacity .45 → .58
+  &__key {
+    font-size: 9px;                         // era 8px
+    letter-spacing: 2px;
+    color: rgba($accent, .58);              // era .45
+    text-transform: uppercase;
+    width: 90px;
+    flex-shrink: 0;
+  }
+
+  &__dots {
+    flex: 1;
+    border-bottom: 1px dotted rgba($accent, .15);
+    margin: 0 8px 3px;
+    min-width: 10px;
+  }
+
+  // MEJORA: 8px → 9px, opacity .55 → .78
+  &__value {
+    font-size: 9px;                         // era 8px
+    letter-spacing: 1.5px;                  // era 2px — más legible
+    color: $text-secondary;                 // era rgba(#fff, .55)
+    text-transform: uppercase;
+    text-align: right;
+    max-width: 130px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &--highlight { color: $cyan-dim; }      // $cyan-dim ahora es .80
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// COLUMNA DERECHA
+// ─────────────────────────────────────────────────────────────────
+.col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+// ─── Bio ─────────────────────────────────────────────────────────
+.bio {
+  margin-bottom: 32px;
+
+  &__tag {
+    display: block;
+    font-size: 9px;
+    letter-spacing: 3px;                    // era 4px
+    color: $accent-label;                   // era .50
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  // MEJORA: 13px → 14px, .55 → .80, line-height 2 → 1.75
+  &__text {
+    font-size: 14px;
+    line-height: 1.75;                      // era 2 — demasiado espacio muerto
+    color: rgba(#fff, .80);                 // era .55 — contraste real mejorado
+    letter-spacing: .3px;
+    margin: 0;
+    white-space: pre-line;
+  }
+}
+
+// ─── Divisor ─────────────────────────────────────────────────────
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba($accent, .35), transparent);
+  margin-bottom: 32px;
+}
+
+// ─── Timeline ────────────────────────────────────────────────────
+.timeline {
+  margin-bottom: 32px;
+
+  &__tag {
+    display: block;
+    font-size: 9px;
+    letter-spacing: 3px;                    // era 4px
+    color: $accent-label;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  &__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 52px;
+      top: 8px;
+      bottom: 8px;
+      width: 1px;
+      background: linear-gradient(180deg, rgba($accent, .55), rgba($accent, .08));
+    }
+  }
+
+  &__entry {
+    display: grid;
+    grid-template-columns: 44px 16px 1fr auto;
+    gap: 12px;
+    align-items: start;
+    padding: 10px 0;
+    animation: tl-slide .5s $ease-out-expo forwards var(--delay, 0s);
+    opacity: 0;
+    transition: background .2s;
+
+    & + & { border-top: 1px solid rgba($accent, .07); }
+
+    // Hover sutil
+    &:hover {
+      .timeline__title { color: $text-primary; }
+      .timeline__dot   { box-shadow: 0 0 10px rgba($accent, .65); }
+    }
+
+    &--exp {
+      .timeline__dot  { background: $cyan; box-shadow: 0 0 8px rgba($cyan, .45); }
+      .timeline__year { color: rgba($cyan, .75); }
+
+      &:hover .timeline__dot { box-shadow: 0 0 12px rgba($cyan, .65); }
+    }
+  }
+
+  // MEJORA: 10px → 11px, .60 → .75
+  &__year {
+    font-family: $font-display;
+    font-size: 11px;                        // era 10px
+    font-weight: 700;
+    color: rgba($accent, .75);             // era .60
+    letter-spacing: 1px;
+    padding-top: 2px;
+    text-align: right;
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $accent;
+    margin-top: 4px;
+    flex-shrink: 0;
+    box-shadow: 0 0 6px rgba($accent, .45);
+    position: relative;
+    z-index: 1;
+    transition: box-shadow .25s;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  // MEJORA: 11px → 12px, .75 → .92
+  &__title {
+    font-size: 12px;                        // era 11px
+    letter-spacing: 1.5px;                  // era 2px
+    color: rgba(#fff, .92);                 // era .75
+    text-transform: uppercase;
+    transition: color .2s;
+  }
+
+  // MEJORA: 9px → 10px, .40 → .62
+  &__place {
+    font-size: 10px;                        // era 9px
+    letter-spacing: 1.5px;
+    color: rgba($accent, .62);              // era .40
+    text-transform: uppercase;
+  }
+
+  // MEJORA: 7px → 8px, opacity .50 → .65
+  &__badge {
+    font-size: 8px;                         // era 7px
+    letter-spacing: 1.5px;
+    color: $accent-glow;
+    border: 1px solid rgba($accent, .22);
+    padding: 2px 6px;
+    text-transform: uppercase;
+    align-self: start;
+    margin-top: 2px;
+
+    &--exp {
+      color: $cyan-dim;
+      border-color: rgba($cyan, .28);
+    }
+  }
+}
+
+// ─── CV section ──────────────────────────────────────────────────
+.cv-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &__tag {
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: $accent-label;
+    text-transform: uppercase;
+  }
+
+  &__hint {
+    font-size: 8px;
+    letter-spacing: 2px;
+    color: rgba($accent, .42);             // era .30 — un poco más legible
+    text-transform: uppercase;
+  }
+}
+
+.cv-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba($cyan, .05);
+  border: 1.5px solid rgba($cyan, .45);
+  color: $cyan-dim;
+  font-family: $font-mono;
+  font-size: 12px;
+  letter-spacing: 3px;
+  padding: 13px 28px;
+  text-transform: uppercase;
+  cursor: crosshair;
+  align-self: flex-start;
+  transition:
+          background   .3s $ease-out-expo,
+          border-color .3s $ease-out-expo,
+          color        .3s $ease-out-expo,
+          box-shadow   .3s $ease-out-expo;
+  // letter-spacing eliminado del transition — evita layout shift
+
+  &__icon {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+    flex-shrink: 0;
+    transition: transform .3s $ease-out-expo;
+  }
+
+  &__bracket {
+    opacity: .55;
+    font-size: 14px;
+    transition: transform .3s $ease-out-expo;
+  }
+
+  &:hover {
+    background: rgba($cyan, .10);
+    border-color: $cyan;
+    color: $cyan;
+    // Sin cambio de letter-spacing — elimina layout shift
+    box-shadow: 0 0 20px rgba(1, 241, 241, 0.22), inset 0 0 10px rgba(1, 241, 241, 0.05);
+
+    .cv-btn__icon    { transform: translateY(2px); }
+    .cv-btn__bracket { transform: translateY(2px); opacity: .85; }
+  }
+
+  // Accesibilidad: estado focus para teclado
+  &:focus-visible {
+    outline: 2px solid $cyan;
+    outline-offset: 4px;
+    box-shadow: 0 0 16px rgba($cyan, .30);
+  }
+
+  &:active {
+    background: rgba($cyan, .15);
+    transform: translateY(1px);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// HUD INFERIOR
+// ─────────────────────────────────────────────────────────────────
+.sys-bar {
+  position: fixed;
+  bottom: 20px; left: 28px;
+  z-index: 10;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: $text-hud;
+  text-transform: uppercase;
+  pointer-events: none;
+  opacity: .35;                             // era .30 — levemente más visible
+}
+
+// ─────────────────────────────────────────────────────────────────
+// RESPONSIVE
+// ─────────────────────────────────────────────────────────────────
+@media (max-width: 900px) {
+  .about       { padding: 32px 28px 64px; }
+  .about__grid { grid-template-columns: 1fr; gap: 40px; }
+  .col-left    { flex-direction: row; flex-wrap: wrap; gap: 20px; }
+  .photo-frame { width: 220px; flex-shrink: 0; }
+  .sys-data    { flex: 1; min-width: 220px; }
+}
+
+@media (max-width: 600px) {
+  .col-left        { flex-direction: column; }
+  .photo-frame     { width: 100%; }
+  .about__header   { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .timeline__entry { grid-template-columns: 36px 14px 1fr auto; gap: 8px; }
+  .cv-btn          { font-size: 10px; letter-spacing: 2px; padding: 11px 20px; }
+}
+
+#photo_role{
+  color: $cyan;
+}
+
+#photo_name{
+  color: $accent-glow;
+}
