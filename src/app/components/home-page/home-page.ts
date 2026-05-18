@@ -45,8 +45,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     readonly FULL_NAME    = 'MATIAS OYHAMBURU';
     readonly JOB_TITLE    = 'Fullstack Developer';
     readonly TECH_STACK   = 'Spring Boot · Angular · TypeScript';
-    readonly GITHUB_URL   = 'https://github.com/tu-usuario';
-    readonly LINKEDIN_URL = 'https://linkedin.com/in/tu-usuario';
+    readonly GITHUB_URL   = 'https://github.com/Mattew0800';
+    readonly LINKEDIN_URL = 'https://linkedin.com/in/oyhamburu-matias';
     readonly COCKPIT_ROUTE = '/cockpit';          // ruta destino (raíz - CockpitViewerComponent)
     readonly TYPEWRITER_DELAY_MS  = 600;          // pausa antes de empezar a tipear
     readonly TYPEWRITER_SPEED_MS  = 90;           // ms por carácter
