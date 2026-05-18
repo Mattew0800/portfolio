@@ -17,7 +17,7 @@ import { ModuleStateService, BootEntry } from '../../services/module-state.servi
 export class LogScreen implements OnInit, OnDestroy {
 
     readonly NAME  = 'MATIAS OYHAMBURU';
-    readonly ROLE  = 'Frontend Developer';
+    readonly ROLE  = 'Fullstack Developer';
     readonly STACK = 'Angular / TypeScript / CSS';
 
     private readonly BOOT_STEPS = [
