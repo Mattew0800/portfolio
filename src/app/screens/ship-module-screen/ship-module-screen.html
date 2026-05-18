@@ -1,23 +1,37 @@
-<div class="screen-container">
-  <button class="back-button" (click)="goBack()">← Volver</button>
-
-  <h1 class="screen-title">PROYECTOS</h1>
-
-  <div class="projects-list">
-    <div class="project-card">
-      <h2>E-Commerce Platform</h2>
-      <p class="tech-stack">Angular • Node.js • MongoDB</p>
+<app-cockpit-screen-frame (back)="onBack()">
+<div class="ship-wrapper">
+    <!-- Leyenda Izquierda -->
+    <div class="legend-left">
+        <div class="legend-item">1. Home</div>
+        <div class="legend-item">2. Projects</div>
+        <div class="legend-item">3. Skills</div>
+        <div class="legend-item">4. About</div>
+        <div class="legend-item">5. Contact</div>
     </div>
 
-    <div class="project-card">
-      <h2>Dashboard Analytics</h2>
-      <p class="tech-stack">React • D3.js • TypeScript</p>
+    <!-- Plano Principal -->
+    <img src="assets/plane.png" alt="nave" />
+    <svg #svg viewBox="0 0 166 622" preserveAspectRatio="xMidYMid meet" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g id="SPACEFLIGHT MODULES">
+            <path id="MODULO 1" d="M113.865 18.4629L118.405 33.5684L124.648 50.3525L128.622 67.6963L133.162 96.7881L136 127H31L33.8379 99.0264L38.9463 73.291L47.459 38.0439L62.2158 0H105.352L113.865 18.4629ZM84.7422 82.5C75.2195 82.5002 67.5 89.9586 67.5 99C67.5 108.042 74.7271 116.5 84.25 116.5C93.7729 116.5 101 108.542 101 99.5C101 90.4585 94.265 82.5 84.7422 82.5Z" fill="#71040B" fill-opacity="0.6" data-default-color="#71040B"/>
+            <path id="MODULO 2" d="M142 213H25L27.7725 135H140.359L142 213ZM84 170C74.8873 170 67 177.94 67 186.5C67 195.06 74.8873 203.5 84 203.5C93.1127 203.5 101 195.06 101 186.5C101 177.94 93.1127 170 84 170Z" fill="#71040B" fill-opacity="0.6" data-default-color="#71040B"/>
+            <path id="MODULO 3" d="M166 281.44V357H2L0 281.44L25 222H142.5L166 281.44ZM84 256.254C74.6112 256.254 67 263.696 67 272.877C67 282.058 74.6112 290.004 84 290.004C93.3888 290.004 101 282.058 101 272.877C101 263.696 93.3888 256.254 84 256.254Z" fill="#71040B" fill-opacity="0.6" data-default-color="#71040B"/>
+            <path id="MODULO 4" d="M166 497H1.5V365H166V497ZM84 404.5C74.6112 404.5 67 409.611 67 422C67 431.389 74.6112 439 84 439C93.3888 439 101 431.389 101 422C102 412.611 93.3888 404.5 84 404.5Z" fill="#71040B" fill-opacity="0.6" data-default-color="#71040B"/>
+            <path id="MODULO 5" d="M166 622H2V505H166V622ZM84 550.5C74.6112 550.5 67 558.387 67 567.5C67 576.613 74.6112 584.5 84 584.5C94 584.5 101 576.613 101 567.5C101 558.387 93.3888 550.5 84 550.5Z" fill="#71040B" fill-opacity="0.6" data-default-color="#71040B"/>
+        </g>
+    </svg>
+
+    <!-- Leyenda Derecha -->
+    <div class="legend-right">
+        <div class="legend-status visited">
+            <span class="dot visited-dot"></span>
+            <span class="text">VISITED</span>
+        </div>
+        <div class="legend-status unvisited">
+            <span class="dot unvisited-dot"></span>
+            <span class="text">UNVISITED</span>
+        </div>
     </div>
 
-    <div class="project-card">
-      <h2>Mobile App</h2>
-      <p class="tech-stack">Flutter • Firebase</p>
-    </div>
-  </div>
 </div>
-
+</app-cockpit-screen-frame>

@@ -1,17 +1,37 @@
-import { Component, ElementRef, OnInit, ViewChild, OnDestroy, ApplicationRef, createComponent, EnvironmentInjector, Type } from '@angular/core';
+import {
+    Component, ElementRef, OnInit, ViewChild, OnDestroy, ApplicationRef, createComponent, EnvironmentInjector, Type,
+    NgZone
+} from '@angular/core';
+import { CommonModule, UpperCasePipe } from '@angular/common';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+import { ModuleStateService, BootEntry } from '../services/module-state.service';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import html2canvas from 'html2canvas';
 import { LogScreen } from '../screens/log-screen/log-screen';
 import { MainScreen } from '../screens/main-screen/main-screen';
-import { ShipModuleScreen } from '../screens/ship-module-screen/ship-module-screen';
+import { ModalService } from '../services/modal.service';
+import { SkillsModalComponent } from '../modals/skills-modal/skills-modal';
+import { ProjectsComponent } from '../modals/projects-modal/projects-modal';
+import {AboutComponent} from "../modals/about-modal/about-modal";
+import {ContactComponent} from "../modals/contact-modal/contact-modal";
+import { ShipModalComponent } from '../modals/ship-modal-component/ship-modal-component';
+import {LogsModalComponent} from "../modals/logs-modal-component/logs-modal-component";
 
 @Component({
     selector: 'app-cockpit-viewer',
     standalone: true,
-    imports: [],
+    imports: [
+        CommonModule,
+        ProjectsComponent,
+        SkillsModalComponent,
+        ContactComponent,
+        LogsModalComponent,
+        AboutComponent,
+        ShipModalComponent,
+    ],
     templateUrl: './cockpit-viewer.html',
     styleUrl: './cockpit-viewer.scss',
 })
@@ -19,6 +39,19 @@ import { ShipModuleScreen } from '../screens/ship-module-screen/ship-module-scre
 export class CockpitViewerComponent implements OnInit, OnDestroy {
     @ViewChild('canvas', { static: true })
     private canvasRef! : ElementRef<HTMLCanvasElement>;
+
+    // Flag público para controlar el overlay de carga
+    modelLoaded = false;
+
+    // Modal control
+    activeModal: string | null = null;
+
+    // Contadores para tracking de carga
+    private videosLoaded = 0;
+    private videosRequired = 0;
+    private texturesRendered = 0;
+    private firstFrameRendered = false;
+    private firstFrameTime: number | null = null;
 
     private renderer! : THREE.WebGLRenderer;
     private scene!: THREE.Scene;
@@ -39,39 +72,57 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
     private targetControlsTarget: THREE.Vector3 = new THREE.Vector3();
     private screenCanvases: Map<string, HTMLCanvasElement> = new Map();
     private screenTextures: Map<string, THREE.CanvasTexture> = new Map();
-    private screenRoutes: Map<string, string> = new Map([
-        ['Plane_1', '/ship-modules'],
-        ['Plane_2', '/logs'],
-        ['Plane_3', '/main']
-    ]);
-    private liRoutes: Record<string, string> = {
-        projects: '/projects', // TODO: ajusta con la ruta real que desees
-        skills: '/education',     // TODO: ajusta con la ruta real que desees
-        experience: '/training' // TODO: ajusta con la ruta real que desees
-    };
     private interactivePlanes: THREE.Mesh[] = [];
     private hoveredPlane: THREE.Mesh | null = null;
     private hoverTextures: Map<number, THREE.CanvasTexture> = new Map(); // Cache de texturas pre-renderizadas
     private isPreRenderingTextures: boolean = false;
 
+    private logScreenAnimFrame = 0;
+    private logScreenCanvas?: HTMLCanvasElement;
+    private logScreenTexture?: THREE.CanvasTexture;
+    private logScreenEntries: Array<{ text: string; status: 'ok' | 'pending'; addedAt: number }> = [];
+    private interactionEntries: BootEntry[] = [];
+    private destroy$ = new Subject<void>();
     constructor(
         private appRef: ApplicationRef,
         private injector: EnvironmentInjector,
-        private router: Router
-    ) {}
+        private modalService: ModalService,
+        private router: Router,
+        private ngZone: NgZone,
+        private moduleStateService: ModuleStateService,
+    ) {
+        // Suscribirse a cambios del modal
+        this.modalService.activeModal$.subscribe(modal => {
+            this.activeModal = modal;
+        });
+    }
 
     ngOnInit(): void {
         this.initScene();
         this.loadModel();
         this.animate();
         this.setupMouseEvents();
-        // this.startCameraDebug(); // Desactivado temporalmente
+
+        // Suscripción a interaction entries del ModuleStateService
+        this.moduleStateService.interactionLogHistory$
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(entries => {
+                this.interactionEntries = [...entries];
+            });
     }
 
     ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
+
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
         }
+
+        if (this.logScreenAnimFrame) {
+            cancelAnimationFrame(this.logScreenAnimFrame);
+        }
+
         if (this.debugInterval) {
             clearInterval(this.debugInterval);
         }
@@ -89,7 +140,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
     private initScene(): void {
         // Crear la escena
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color(0x1a1a1a);
+        this.scene.background = new THREE.Color(0x000000);
 
         // Crear cámara por defecto (será reemplazada por la cámara del modelo)
         const canvas = this.canvasRef.nativeElement;
@@ -149,11 +200,11 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                 // Convertir texturas de imagen a video textures
                 this.setupVideoTextures(gltf.scene);
 
-                // Agregar luz puntual muy suave en el cockpit
-                const cockpitLight = new THREE.PointLight(0xffffff, 0.3, 5); // Intensidad 0.3, distancia 5
+                // Agregar luz puntual muy suave en el cockpit con tonos cálidos (naranja/dorado)
+                const cockpitLight = new THREE.PointLight(0xffb366, 0.5, 8); // Color cálido (naranja-dorado), intensidad aumentada a 0.5, distancia 8
                 cockpitLight.position.set(0, 1.5, -11); // Posición cerca del cockpit
                 this.scene.add(cockpitLight);
-                console.log('💡 Luz suave agregada en el cockpit');
+                console.log('💡 Luz cálida agregada en el cockpit');
 
                 // BUSCAR Y USAR LA CÁMARA ESPECÍFICA DEL MODELO
                 const sceneCamera = this.findCameraByName(gltf.scene, 'Camera'); // Cambia 'Camera' por el nombre de tu cámara
@@ -213,6 +264,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                 // Buscar y almacenar las pantallas (Plane1, Plane2, Plane3)
                 this.findScreens(gltf.scene);
 
+
                 // Configurar contenido de las pantallas
                 this.setupScreenContent();
 
@@ -237,11 +289,10 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             let component: Type<any> | null = null;
             switch (mesh.name) {
                 case 'Plane_1':
-                    component = ShipModuleScreen;
+                    component = ShipModalComponent;
                     break;
                 case 'Plane_2':
                     component = LogScreen;
-
                     break;
                 case 'Plane_3':
                     component = MainScreen;
@@ -253,6 +304,8 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             if (component) {
                 // Crear canvas y textura para esta pantalla usando el componente Angular
                 this.createScreenTextureFromComponent(mesh, component);
+                this.texturesRendered++;
+                console.log(`✅ Pantalla ${mesh.name} renderizada (${this.texturesRendered}/${this.screenMeshes.length - 1})`);
 
                 // Si es la pantalla principal, crear planos interactivos para los LI
                 if (mesh.name === 'Plane_3') {
@@ -265,7 +318,35 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             }
         });
 
+
+
         console.log('✅ Contenido de pantallas configurado');
+
+        // Verificar si todo está listo
+        this.checkIfFullyLoaded();
+    }
+
+    private checkIfFullyLoaded(): void {
+        console.log(`⏳ Verificando estado de carga...`);
+        console.log(`   Videos: ${this.videosLoaded}/${this.videosRequired}`);
+        console.log(`   Texturas: ${this.texturesRendered}/${this.screenMeshes.length - 1}`); // -1 porque Plane_1 es modal
+        console.log(`   Primer frame: ${this.firstFrameRendered}`);
+
+        // Esperar a que todo esté listo
+        const checkReady = () => {
+            if (
+                this.videosLoaded >= this.videosRequired &&
+                this.texturesRendered >= this.screenMeshes.length - 1 && // -1 porque Plane_1 es modal
+                this.firstFrameRendered
+            ) {
+                console.log('✅ ¡COCKPIT COMPLETAMENTE CARGADO!');
+                this.modelLoaded = true;
+            } else {
+                setTimeout(checkReady, 200);
+            }
+        };
+
+        setTimeout(checkReady, 500);
     }
 
     private getProjectsContent(): string {
@@ -535,21 +616,61 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
 
         // Esperar a que el DOM se actualice y los estilos se apliquen
         setTimeout(() => {
-            // Crear canvas
-            const canvas = document.createElement('canvas');
-            canvas.width = 2048;
-            canvas.height = 2048;
-            const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
-            if (!ctx) {
-                console.error('   ❌ No se pudo obtener contexto 2D');
+            // ------------------------------------------
+            // PLANE_2 (Log Screen): captura con tamaño lógico fijo y escalado
+            // ------------------------------------------
+            // Limpiamos el componente que no usaremos
+            if (mesh.name === 'Plane_2') {
                 this.cleanup(componentRef, hostElement);
-                return;
-            }
 
-            // Renderizar el componente a canvas usando html2canvas
-            this.renderDOMToCanvasSimple(hostElement, canvas, ctx).then(() => {
-                // Crear textura del canvas
+                const w = 2048;
+                const h = 2048;
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+
+                // Guardar referencias
+                this.logScreenCanvas = canvas;
+                this.logScreenEntries = [];
+
+                // Precargar líneas de boot
+                const bootLines = [
+                    'Initializing core systems',
+                    'Loading navigation interface',
+                    'Mounting UI modules',
+                    'Establishing environment',
+                    'Verifying dependencies'
+                ];
+                bootLines.forEach((text, i) => {
+                    this.logScreenEntries.push({
+                        text,
+                        status: 'ok' as 'ok' | 'pending',
+                        addedAt: Date.now() - (bootLines.length - i) * 600
+                    });
+                });
+
+// Precargar líneas de interaction (aparecerán después)
+                const interactionLines = [
+                    'Accessing module: EXIT',
+                    'Loading component data',
+                    'Rendering interface',
+                    'Accessing module: PROJECTS',
+                    'Loading component data',
+                    'Rendering interface',
+                ];
+                interactionLines.forEach((text, i) => {
+                    // Aparecerán progresivamente en los próximos segundos
+                    setTimeout(() => {
+                        this.logScreenEntries.push({
+                            text,
+                            status: i % 3 === 1 ? 'pending' : 'ok',  // algunos pendientes
+                            addedAt: Date.now()
+                        });
+                    }, 3000 + i * 800);
+                });
+
+                // Crear textura
                 const texture = new THREE.CanvasTexture(canvas);
                 texture.minFilter = THREE.LinearFilter;
                 texture.magFilter = THREE.LinearFilter;
@@ -560,7 +681,156 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                 texture.rotation = -Math.PI / 2;
                 texture.center.set(0.5, 0.5);
 
-                // Crear y aplicar material
+                this.logScreenTexture = texture;
+
+                const newMaterial = new THREE.MeshBasicMaterial({
+                    map: texture,
+                    side: THREE.DoubleSide,
+                    transparent: false,   // ← opaco
+                    opacity: 1,           // ← total
+                    depthWrite: true      // ← evita artefactos de profundidad
+                });
+
+                if (mesh.material) {
+                    if (Array.isArray(mesh.material)) mesh.material.forEach(m => m.dispose());
+                    else mesh.material.dispose();
+                }
+                mesh.material = newMaterial;
+                mesh.material.needsUpdate = true;
+                mesh.visible = true;
+                mesh.frustumCulled = false;
+                mesh.renderOrder = 999;
+
+                this.screenCanvases.set(mesh.name, canvas);
+                this.screenTextures.set(mesh.name, texture);
+
+                // Iniciar animación fuera de la zona de Angular
+                this.ngZone.runOutsideAngular(() => this.startLogScreenAnimation());
+                this.ngZone.runOutsideAngular(() => {
+                    setInterval(() => {
+                        const messages = [
+                            'Heartbeat OK',
+                            'Memory usage: 47%',
+                            'Connection active',
+                            'Cache cleared',
+                            'Checking for updates...'
+                        ];
+                        const msg = messages[Math.floor(Math.random() * messages.length)];
+                        this.logScreenEntries.push({
+                            text: msg,
+                            status: 'ok',
+                            addedAt: Date.now()
+                        });
+                        if (this.logScreenEntries.length > 100) {
+                            this.logScreenEntries = this.logScreenEntries.slice(-50);
+                        }
+                    }, 7000);
+                });
+
+                console.log('✅ Live log‑screen canvas started');
+                return;
+            }
+
+            // ------------------------------------------
+            // ELIMINACIÓN DE FRAMES Y SVG (Plane_1 solía tener un SVG)
+            // ------------------------------------------
+            if (mesh.name === 'Plane_1' || mesh.name === 'Plane_2') {
+                const frameElement = hostElement.querySelector('app-cockpit-screen-frame');
+                if (frameElement) {
+                    const contentContainer = frameElement.querySelector('.csf-content');
+                    if (contentContainer) {
+                        while (contentContainer.firstChild) {
+                            hostElement.appendChild(contentContainer.firstChild);
+                        }
+                    }
+                    frameElement.remove();
+                }
+            }
+            if (mesh.name === 'Plane_1') {
+                const svgElement = hostElement.querySelector('svg');
+                if (svgElement) {
+                    svgElement.remove();
+                    console.log('🗑️ SVG eliminado para Plane_1');
+                }
+            }
+
+            // ------------------------------------------
+            // FLUJO ORIGINAL PARA LAS DEMÁS PANTALLAS
+            // ------------------------------------------
+            const canvas = document.createElement('canvas');
+            canvas.width = 2048;
+            canvas.height = 2048;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            if (!ctx) {
+                this.cleanup(componentRef, hostElement);
+                return;
+            }
+
+            this.renderDOMToCanvasSimple(hostElement, canvas, ctx)
+                .then(() => {
+                    const texture = new THREE.CanvasTexture(canvas);
+                    texture.minFilter = THREE.LinearFilter;
+                    texture.magFilter = THREE.LinearFilter;
+                    texture.needsUpdate = true;
+                    texture.flipY = true;
+                    texture.wrapS = THREE.ClampToEdgeWrapping;
+                    texture.wrapT = THREE.ClampToEdgeWrapping;
+                    texture.rotation = -Math.PI / 2;
+                    texture.center.set(0.5, 0.5);
+
+                    const newMaterial = new THREE.MeshBasicMaterial({
+                        map: texture,
+                        side: THREE.DoubleSide,
+                        transparent: true,
+                        opacity: mesh.name === 'Plane_1' ? 0.4 : 1,
+                        depthWrite: mesh.name === 'Plane_1' ? false : true
+                    });
+
+                    if (mesh.material) {
+                        if (Array.isArray(mesh.material)) mesh.material.forEach(m => m.dispose());
+                        else mesh.material.dispose();
+                    }
+                    mesh.material = newMaterial;
+                    mesh.material.needsUpdate = true;
+                    mesh.visible = true;
+                    mesh.frustumCulled = false;
+                    mesh.renderOrder = 999;
+
+                    this.screenCanvases.set(mesh.name, canvas);
+                    this.screenTextures.set(mesh.name, texture);
+                    if (mesh.name === 'Plane_3') {
+                        this.hoverTextures.set(-1, texture);
+                    }
+                    console.log(`✅ Textura generada para ${mesh.name}`);
+
+                    setTimeout(() => {
+                        this.cleanup(componentRef, hostElement);
+                    }, 100);
+                })
+                .catch(error => {
+                    console.error('❌ Error al renderizar componente:', error);
+                    this.cleanup(componentRef, hostElement);
+                });
+
+        }, 500);
+    }
+
+    private loadImageToScreen(mesh: THREE.Mesh, imagePath: string): void {
+        console.log(`   🖼️ Cargando imagen para pantalla: ${mesh.name} desde ${imagePath}`);
+
+        const textureLoader = new THREE.TextureLoader();
+
+        textureLoader.load(
+            imagePath,
+            (texture: THREE.Texture) => {
+                // Configurar la textura
+                texture.minFilter = THREE.LinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+                texture.flipY = true;
+                texture.wrapS = THREE.ClampToEdgeWrapping;
+                texture.wrapT = THREE.ClampToEdgeWrapping;
+
+                // Crear material con la textura
                 const newMaterial = new THREE.MeshBasicMaterial({
                     map: texture,
                     side: THREE.DoubleSide,
@@ -584,21 +854,16 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                 mesh.frustumCulled = false;
                 mesh.renderOrder = 999;
 
-                // Guardar referencias
-                this.screenCanvases.set(mesh.name, canvas);
-                this.screenTextures.set(mesh.name, texture);
-
-                console.log(`   ✅ Textura creada y aplicada desde componente a ${mesh.name}`);
-
-                // Limpiar DESPUÉS de un pequeño delay para asegurar que la textura se aplicó
-                setTimeout(() => {
-                    this.cleanup(componentRef, hostElement);
-                }, 100);
-            }).catch(error => {
-                console.error('   ❌ Error al renderizar componente a canvas:', error);
-                this.cleanup(componentRef, hostElement);
-            });
-        }, 500);
+                console.log(`   ✅ Imagen cargada y aplicada a ${mesh.name}`);
+            },
+            (progress: ProgressEvent) => {
+                const percent = (progress.loaded / progress.total) * 100;
+                console.log(`   📥 Cargando imagen para ${mesh.name}: ${percent.toFixed(2)}%`);
+            },
+            (err: unknown) => {
+                console.error(`   ❌ Error al cargar imagen para ${mesh.name}:`, err);
+            }
+        );
     }
 
     private async renderDOMToCanvasSimple(element: HTMLElement, targetCanvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D): Promise<void> {
@@ -969,35 +1234,6 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         }
     }
 
-    private addScreenHelpers(): void {
-        console.log('🔧 Agregando helpers visuales para pantallas...');
-
-        this.screenMeshes.forEach((mesh, index) => {
-            // Crear un borde alrededor de cada pantalla
-            const edges = new THREE.EdgesGeometry(mesh.geometry);
-            const lineMaterial = new THREE.LineBasicMaterial({
-                color: index === 0 ? 0xff0000 : index === 1 ? 0x00ff00 : 0x0000ff,
-                linewidth: 5
-            });
-            const wireframe = new THREE.LineSegments(edges, lineMaterial);
-
-            // Copiar transformación del mesh
-            wireframe.position.copy(mesh.position);
-            wireframe.rotation.copy(mesh.rotation);
-            wireframe.scale.copy(mesh.scale);
-
-            // Si el mesh tiene un parent, agregar el wireframe al mismo parent
-            if (mesh.parent) {
-                mesh.parent.add(wireframe);
-            } else {
-                this.scene.add(wireframe);
-            }
-
-            console.log(`   ✅ Helper agregado para "${mesh.name}" con color ${index === 0 ? 'rojo' : index === 1 ? 'verde' : 'azul'}`);
-        });
-
-        console.log('✅ Helpers visuales agregados');
-    }
 
     private generatePlaneUVs(geometry: THREE.BufferGeometry): void {
         const positions = geometry.attributes['position'];
@@ -1099,11 +1335,11 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         // Asegurar matrices
         screenMesh.updateMatrixWorld(true);
 
-        // --- Parámetros para iteración rápida (vamos ajustando estos contigo) ---
+        // --- Parámetros para iteración rápida
         const DEBUG_OPACITY = 0.06;
-        const SHOW_DEBUG_COLORS = false; // pon true si quieres ver colores de guía
+        const SHOW_DEBUG_COLORS = false;
         const NORMAL_OFFSET = 0.02;
-        const GLOBAL_SHIFT_FACTOR = -0.09; // Desplaza todos los planos un poco hacia abajo en el eje de apilado
+        const GLOBAL_SHIFT_FACTOR = 0.02; // Desplaza todos los planos
 
         // (alto > ancho)
         const PLANE_WIDTH_FACTOR = 0.12; // antes 0.10, un poco más ancho
@@ -1142,12 +1378,14 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         const planeWidth = Math.max(0.001, worldWidth * PLANE_WIDTH_FACTOR);
         const planeHeight = Math.max(0.001, worldHeight * PLANE_HEIGHT_FACTOR);
 
-        // Items (orden de arriba a abajo): EXACTAMENTE 3
-        // Para agregar otro ítem en el futuro, añade aquí otro objeto { name: 'nuevo', idx: 3, color: 0xff00ff }
+        // Items (orden de arriba a abajo): EXACTAMENTE 5
+        // Para agregar otro ítem en el futuro, añade aquí otro objeto { name: 'nuevo', idx: 5, color: 0xff00ff }
         const liItems = [
             { name: 'projects', idx: 0, color: 0xff0000 },
             { name: 'skills', idx: 1, color: 0x00ff00 },
-            { name: 'experience', idx: 2, color: 0x0000ff }
+            { name: 'about', idx: 2, color: 0x0000ff },
+            { name: 'contact', idx: 3, color: 0xffff00 },
+            { name: 'home', idx: 4, color: 0xffffff }
         ] as const;
 
         liItems.forEach((item) => {
@@ -1206,6 +1444,12 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
     }
 
     private onMouseClick(event: MouseEvent): void {
+        // Ignorar clicks si hay un modal abierto
+        if (this.activeModal) {
+            console.log('🚫 Click ignorado - Modal abierto:', this.activeModal);
+            return;
+        }
+
         console.log('🖱️ CLICK DETECTADO - Probando raycasting...');
 
         const canvas = this.canvasRef.nativeElement;
@@ -1221,18 +1465,41 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         console.log('   🎯 Ray origin:', this.raycaster.ray.origin);
         console.log('   ➡️ Ray direction:', this.raycaster.ray.direction);
         console.log('   🖥️ Pantallas disponibles:', this.screenMeshes.length);
+        console.log('   🎯 Planos interactivos disponibles:', this.interactivePlanes.length);
 
         // Click sobre planos interactivos (LIs)
         const planeIntersects = this.raycaster.intersectObjects(this.interactivePlanes, false);
+        console.log('   ✨ Intersecciones con planos interactivos:', planeIntersects.length);
+
         if (planeIntersects.length > 0) {
             const clickedPlane = planeIntersects[0].object as THREE.Mesh;
             const label = clickedPlane.userData['label'];
-            const route = label ? this.liRoutes[label] : undefined;
-            if (route) {
-                console.log(`   🚀 Navegando por LI "${label}" a:`, route);
-                this.router.navigate([route]);
+
+            console.log(`   🎯 Plano interactivo clickeado: ${clickedPlane.name}, label: "${label}"`);
+
+            // Si es home, navegar a /home
+            if (label === 'home') {
+                console.log(`   🏠 Navegando a /home`);
+                this.router.navigate(['']);
+                return;
+            }
+
+            // Mapear labels a nombres de modales
+            const modalMap: Record<string, string> = {
+                projects: 'projects',
+                skills: 'skills',
+                about: 'about',
+                contact: 'contact'
+            };
+
+            const modalName = label ? modalMap[label] : undefined;
+            console.log(`   📂 Label: "${label}", Modal Name: "${modalName}"`);
+
+            if (modalName) {
+                console.log(`   📂 Abriendo modal "${modalName}" para LI "${label}"`);
+                this.modalService.openModal(modalName);
             } else {
-                console.warn(`   ⚠️ No hay ruta configurada para LI "${label}". Actualiza liRoutes.`);
+                console.warn(`   ⚠️ No hay modal configurado para LI "${label}". Actualiza modalMap.`);
             }
             return; // No seguimos probando pantallas
         }
@@ -1256,13 +1523,19 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             const clickedScreen = screenIntersects[0].object as THREE.Mesh;
             console.log('   🎯 ¡PANTALLA DETECTADA!:', clickedScreen.name);
 
-            // Obtener la ruta correspondiente
-            const route = this.screenRoutes.get(clickedScreen.name);
-            if (route && route!=='/main') {
-                console.log('   🚀 Navegando a:', route);
-                this.router.navigate([route]);
+            // Mapear nombres de pantallas a modales
+            const screenModalMap: Record<string, string> = {
+                'Plane_1': 'ship-modules',  // Ship Module Screen
+                'Plane_2': 'logs',          // Log Screen
+                'Plane_3': 'skills'         // Main Screen → Skills
+            };
+
+            const modalName = screenModalMap[clickedScreen.name];
+            if (modalName) {
+                console.log(`   📂 Abriendo modal "${modalName}" para pantalla "${clickedScreen.name}"`);
+                this.modalService.openModal(modalName);
             } else {
-                console.warn('   ⚠️ No se encontró ruta para la pantalla:', clickedScreen.name);
+                console.warn('   ⚠️ No se encontró modal para la pantalla:', clickedScreen.name);
             }
         } else {
             console.log('   ❌ No se detectaron pantallas');
@@ -1281,6 +1554,11 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
     }
 
     private onMouseMove(event: MouseEvent): void {
+        // Ignorar movimiento del mouse si hay un modal abierto
+        if (this.activeModal) {
+            return;
+        }
+
         // Convertir posición del mouse a coordenadas normalizadas (-1 a +1)
         const canvas = this.canvasRef.nativeElement;
         const rect = canvas.getBoundingClientRect();
@@ -1302,10 +1580,16 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                 this.hoveredPlane = intersectedPlane;
                 this.updateMainScreenWithHover(intersectedPlane.userData['index']);
             }
+
+            // Cambiar cursor a pointer cuando estamos sobre un elemento interactivo del menú
+            canvas.style.cursor = 'pointer';
         } else if (this.hoveredPlane !== null) {
             // Si no hay hover sobre planos pero había uno activo
             this.hoveredPlane = null;
             this.updateMainScreenWithHover(-1); // Sin hover
+
+            // Restaurar cursor a default cuando salimos de los elementos interactivos
+            canvas.style.cursor = 'default';
         }
 
         // Verificar intersecciones con las pantallas (recursivo = true para buscar en hijos también)
@@ -1335,12 +1619,23 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                 this.hoveredScreen = intersectedScreen;
                 this.focusOnScreen(intersectedScreen);
             }
+
+            // Cambiar cursor a pointer cuando estamos sobre otras pantallas (NO la main screen)
+            // Para la main screen, el cursor solo cambia cuando está sobre los elementos interactivos del menú
+            if (intersectedScreen.name !== 'Plane_3') {
+                canvas.style.cursor = 'pointer';
+            }
         } else {
             // Si no hay hover y había una pantalla seleccionada
             if (this.hoveredScreen !== null) {
                 console.log(`👋 Hover perdido, volviendo a posición original`);
                 this.hoveredScreen = null;
                 this.returnToOriginalPosition();
+            }
+
+            // Restaurar cursor solo si no estamos sobre elementos interactivos del menú
+            if (this.hoveredPlane === null) {
+                canvas.style.cursor = 'default';
             }
         }
     }
@@ -1391,7 +1686,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
 
         console.log('🎨 Pre-renderizando texturas de hover...');
 
-        const items = ['PROJECTS', 'SKILLS', 'EXPERIENCE'];
+        const items = ['PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT', 'EXIT'];
 
         // Renderizar textura para cada estado (incluyendo sin hover = -1)
         for (let hoveredIndex = -1; hoveredIndex < items.length; hoveredIndex++) {
@@ -1428,10 +1723,17 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             document.body.appendChild(hostElement);
 
             // Crear el HTML del componente con hover aplicado
-            const items = ['PROJECTS', 'SKILLS', 'EXPERIENCE'];
+            const items = ['PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT', 'EXIT'];
             const listHTML = items.map((item, index) => {
                 const color = index === hoveredIndex ? 'cyan' : 'red';
-                return `<li class="main__options-li" style="color: ${color}; cursor: pointer; margin: 20px 0;">[ ${item} ]</li>`;
+                // Espacios exactos como en el componente HTML
+                let spacing = '';
+                if (index === 0) spacing = '[ PROJECTS ]';
+                else if (index === 1) spacing = '[ SKILLS ]';
+                else if (index === 2) spacing = '[ ABOUT ]';
+                else if (index === 3) spacing = '[ CONTACT ]';
+                else if (index === 4) spacing = '[ EXIT ]';
+                return `<li class="main__options-li" style="color: ${color}; cursor: pointer; margin: 20px 0;">${spacing}</li>`;
             }).join('');
 
             hostElement.innerHTML = `
@@ -1514,7 +1816,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         document.body.appendChild(hostElement);
 
         // Crear el HTML del componente con hover aplicado
-        const items = ['PROJECTS', 'SKILLS', 'EXPERIENCE'];
+        const items = ['PROJECTS', 'SKILLS', 'ABOUT', 'CONTACT', 'EXIT'];
         const listHTML = items.map((item, index) => {
             const color = index === hoveredIndex ? 'cyan' : 'red';
             return `<li class="main__options-li" style="color: ${color}; cursor: pointer; margin: 20px 0;">[ ${item} ]</li>`;
@@ -1523,7 +1825,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         hostElement.innerHTML = `
       <div class="screen-container" style="background: #000; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12rem; font-family: monospace;">
         <ul class="main__options" style="list-style: none; text-align: center; padding: 0; margin: 0;">
-          <p style="margin-bottom: 60px; color: #fff;">SELECT MODULE</p>
+          <p style="margin-bottom: 60px; color: #fff;">SELECCIONAR MODULOl</p>
           ${listHTML}
         </ul>
       </div>
@@ -1675,6 +1977,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
                             // Aplicar video directamente
                             const videoUrl = '/assets/space.mp4';
                             console.log(`   🎬 Aplicando video: ${videoUrl}`);
+                            this.videosRequired++;  // Contar video requerido
                             this.replaceTextureWithVideo(material, propName, videoUrl, child.name);
                         }
                     });
@@ -1682,7 +1985,7 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
             }
         });
 
-        console.log('🎥 Configuración de video completada');
+        console.log(`🎥 Configuración de video completada. Videos requeridos: ${this.videosRequired}`);
     }
 
     private _getVideoUrlFromImage(imageUrl: string): string | null {
@@ -1729,6 +2032,9 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         video.addEventListener('loadeddata', () => {
             console.log(`   ✅ ¡Video cargado exitosamente!`);
             console.log(`   ℹ️  Duración: ${video.duration.toFixed(2)}s, Tamaño: ${video.videoWidth}x${video.videoHeight}`);
+
+            this.videosLoaded++;  // Incrementar contador de videos cargados
+            console.log(`   📊 Videos cargados: ${this.videosLoaded}/${this.videosRequired}`);
 
             video.play().then(() => {
                 console.log(`   ▶️ ¡VIDEO REPRODUCIÉNDOSE EN "${meshName}"!`);
@@ -1787,31 +2093,6 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         console.log(`   🎬 El video debería empezar a reproducirse pronto...`);
     }
 
-    private startCameraDebug(): void {
-        // Mostrar posición de la cámara cada segundo
-        this.debugInterval = window.setInterval(() => {
-            if (this.camera) {
-                // console.clear(); // Desactivado para ver información del modelo
-                console.log('═══════════════════════════════════════');
-                console.log('📹 POSICIÓN DE LA CÁMARA EN TIEMPO REAL');
-                console.log('═══════════════════════════════════════');
-                console.log('Position:');
-                console.log(`   x: ${this.camera.position.x.toFixed(3)}`);
-                console.log(`   y: ${this.camera.position.y.toFixed(3)}`);
-                console.log(`   z: ${this.camera.position.z.toFixed(3)}`);
-                console.log('Rotation (radianes):');
-                console.log(`   x: ${this.camera.rotation.x.toFixed(3)}`);
-                console.log(`   y: ${this.camera.rotation.y.toFixed(3)}`);
-                console.log(`   z: ${this.camera.rotation.z.toFixed(3)}`);
-                console.log('Otros:');
-                console.log(`   FOV: ${this.camera.fov}°`);
-                console.log(`   Target (lookAt): (${this.controls.target.x.toFixed(3)}, ${this.controls.target.y.toFixed(3)}, ${this.controls.target.z.toFixed(3)})`);
-                console.log('═══════════════════════════════════════');
-                console.log('💡 Mueve la cámara con el mouse y dime dónde quieres que quede');
-            }
-        }, 1000);
-    }
-
     private applyControlRestrictions(): void {
         console.log('🔒 Aplicando restricciones a los controles...');
 
@@ -1868,6 +2149,21 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         this.animationId = requestAnimationFrame(() => this.animate());
         this.updateCameraAnimation(); // Actualizar animación de cámara
 
+        // Registrar el tiempo del primer frame pero no marcar como renderizado todavía
+        if (!this.firstFrameTime) {
+            this.firstFrameTime = performance.now();
+            console.log('🎬 Primer frame detectado, esperando 1.5s para optimización de Three.js...');
+        }
+
+        // Marcar como renderizado 1.5s después del primer frame
+        if (this.firstFrameTime && !this.firstFrameRendered) {
+            const timeSinceFirstFrame = performance.now() - this.firstFrameTime;
+            if (timeSinceFirstFrame > 1500) {
+                this.firstFrameRendered = true;
+                console.log('✅ Renderizado completamente optimizado (1.5s después del primer frame)');
+            }
+        }
+
         // Actualizar texturas de canvas en cada frame
         this.screenTextures.forEach((texture) => {
             texture.needsUpdate = true;
@@ -1882,5 +2178,176 @@ export class CockpitViewerComponent implements OnInit, OnDestroy {
         this.camera.aspect = canvas.clientWidth / canvas.clientHeight;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    }
+
+    private startLogScreenAnimation(): void {
+        const draw = () => {
+            this.renderLogScreenCanvas();
+            this.logScreenAnimFrame = requestAnimationFrame(draw);
+        };
+        this.logScreenAnimFrame = requestAnimationFrame(draw);
+    }
+
+    private renderLogScreenCanvas(): void {
+        const canvas = this.logScreenCanvas;
+        const texture = this.logScreenTexture;
+        if (!canvas || !texture) return;
+
+        const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+        const w = canvas.width;
+        const h = canvas.height;
+
+        // Limpiar fondo
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, w, h);
+
+        // Colores
+        const green = '#00ff9c';
+        const gray = '#8b949e';
+        const grayDim = '#3d4450';
+        const textBright = '#e6edf3';
+        const cx = w / 2;
+
+        // ── Ancho seguro visible del panel (zona UV mapeada al mesh) ──
+        const safeLeft  = cx - 260;
+        const safeRight = cx + 260;
+        const contentW  = safeRight - safeLeft;
+
+        // ── Topbar (siempre visible) ──
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 40px monospace';
+        ctx.fillStyle = grayDim;
+        ctx.fillText('terminal', cx - 60, 220);
+        ctx.fillStyle = green;
+        ctx.beginPath();
+        ctx.arc(cx + 140, 204, 16, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.textAlign = 'left';
+        ctx.strokeStyle = 'rgba(139, 148, 158, 0.25)';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(safeLeft, 280);
+        ctx.lineTo(safeRight, 280);
+        ctx.stroke();
+
+        const lineH    = 88;
+        const now      = Date.now();
+        const arrowW   = 40;
+        const statusW  = 80;
+        const gap      = 16;
+        const textMaxW = contentW - arrowW - gap - statusW - gap;
+
+        // Helper para renderizar una lista de entries (misma estética Boot Sequence)
+        const renderEntryList = (
+            list: Array<{ text: string; status: 'ok' | 'pending'; addedAt?: number }>,
+            startY: number,
+            maxVisible: number,
+        ): number => {
+            const visible = list.slice(-maxVisible);
+            let y = startY;
+            visible.forEach((entry) => {
+                const age = entry.addedAt !== undefined ? now - entry.addedAt : now;
+                let alpha = 1;
+                let offsetY = 0;
+                if (age < 300) {
+                    alpha = age / 300;
+                    offsetY = (1 - alpha) * 32;
+                }
+                ctx.globalAlpha = alpha * 0.85;
+
+                ctx.font = '42px monospace';
+                ctx.fillStyle = grayDim;
+                ctx.fillText('→', safeLeft, y + offsetY);
+
+                ctx.font = '38px monospace';
+                ctx.fillStyle = gray;
+                ctx.fillText(entry.text, safeLeft + arrowW + gap, y + offsetY, textMaxW);
+
+                ctx.font = '36px monospace';
+                ctx.textAlign = 'right';
+                if (entry.status === 'ok') {
+                    ctx.fillStyle = green;
+                    ctx.fillText('OK', safeRight, y + offsetY);
+                } else {
+                    ctx.fillStyle = grayDim;
+                    ctx.fillText('...', safeRight, y + offsetY);
+                }
+                ctx.textAlign = 'left';
+
+                y += lineH;
+                ctx.globalAlpha = 1;
+            });
+            return y;
+        };
+
+        // ── Sección Boot Sequence (siempre visible) ──
+        ctx.textAlign = 'center';
+        ctx.font = '34px monospace';
+        ctx.fillStyle = grayDim;
+        ctx.fillText('BOOT SEQUENCE', cx, 380);
+        ctx.textAlign = 'left';
+
+        let y = renderEntryList(this.logScreenEntries, 460, 8);
+
+        if (this.interactionEntries.length <= 1) {
+            // ── Vista: identidad + system ready ──
+            y += 40;
+            ctx.strokeStyle = 'rgba(139, 148, 158, 0.15)';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(safeLeft, y);
+            ctx.lineTo(safeRight, y);
+            ctx.stroke();
+
+            ctx.textAlign = 'center';
+
+            y += 120;
+            ctx.fillStyle = textBright;
+            ctx.font = 'bold 88px monospace';
+            ctx.fillText('MATI', cx, y);
+
+            y += 100;
+            ctx.fillStyle = gray;
+            ctx.font = '42px monospace';
+            ctx.fillText('Frontend Developer', cx, y);
+
+            y += 60;
+            ctx.fillStyle = grayDim;
+            ctx.font = '34px monospace';
+            ctx.fillText('Angular / TypeScript / CSS', cx, y);
+
+            y += 110;
+            ctx.fillStyle = green;
+            ctx.font = '40px monospace';
+            ctx.fillText('System ready', cx, y);
+            ctx.textAlign = 'left';
+            const blink = Math.floor(now / 500) % 2 === 0;
+            if (blink) {
+                ctx.fillStyle = green;
+                ctx.fillRect(cx + 182, y - 36, 28, 44);
+            }
+
+        } else {
+            // ── Vista: Interaction Logs (sin identidad ni system ready) ──
+            y += 40;
+            ctx.strokeStyle = 'rgba(139, 148, 158, 0.15)';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(safeLeft, y);
+            ctx.lineTo(safeRight, y);
+            ctx.stroke();
+
+            y += 60;
+            ctx.textAlign = 'center';
+            ctx.font = '34px monospace';
+            ctx.fillStyle = grayDim;
+            ctx.fillText('INTERACTION LOGS', cx, y);
+            ctx.textAlign = 'left';
+
+            y += 40;
+            renderEntryList(this.interactionEntries.filter(e => e.status !== null) as Array<{ text: string; status: 'ok' | 'pending'; addedAt?: number }>, y, 7);
+        }
+
+        texture.needsUpdate = true;
     }
 }

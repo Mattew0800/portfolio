@@ -1,0 +1,231 @@
+<app-cockpit-screen-frame (back)="onBack()">
+<section class="contact">
+
+
+
+    <!-- ─── HEADER ───────────────────────────────────────────── -->
+    <header class="contact__header animate-fadein" style="--delay: 0.1s">
+        <div>
+            <span class="section-tag">// OPEN CHANNEL</span>
+            <h2 class="section-title">CONTACT</h2>
+        </div>
+        <span class="availability">
+            <span class="availability__dot"></span>
+            {{ AVAILABILITY_MSG }}
+        </span>
+    </header>
+
+    <!-- ─── GRID PRINCIPAL ──────────────────────────────────── -->
+    <main class="contact__grid">
+
+        <!-- ══════════════ COLUMNA IZQUIERDA: canales ══════════════ -->
+        <aside class="col-channels animate-fadein" style="--delay: 0.2s">
+
+            <span class="col-label">// TRANSMISSION CHANNELS</span>
+
+            <ul class="channels" role="list">
+                @for (ch of channels; track ch.id; let i = $index) {
+                    <li
+                            class="channel animate-fadein"
+                            style="--delay:{{ 0.25 + i * 0.1 }}s"
+                            role="listitem"
+                    >
+                        <button
+                                class="channel__btn"
+                                (click)="openChannel(ch)"
+                                [attr.aria-label]="'Abrir ' + ch.label"
+                        >
+                            <!-- Ícono -->
+                            <div class="channel__icon-wrap channel__icon-wrap--{{ ch.id }}">
+                                <svg class="channel__icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path [attr.d]="ch.svgPath"/>
+                                </svg>
+                            </div>
+
+                            <!-- Info -->
+                            <div class="channel__info">
+                                <span class="channel__label">{{ ch.label }}</span>
+                                <span class="channel__value">{{ ch.value }}</span>
+                            </div>
+
+                            <!-- Arrow -->
+                            <span class="channel__arrow" aria-hidden="true">→</span>
+
+                            <!-- Esquinas HUD -->
+                            <span class="channel__c channel__c--tl" aria-hidden="true"></span>
+                            <span class="channel__c channel__c--br" aria-hidden="true"></span>
+                        </button>
+                    </li>
+                }
+            </ul>
+
+
+
+        </aside>
+
+        <!-- ══════════════ COLUMNA DERECHA: formulario ═════════════ -->
+        <div class="col-form animate-fadein" style="--delay: 0.3s">
+
+            <span class="col-label">// COMPOSE MESSAGE</span>
+
+            <!-- Estado: SENT -->
+            @if (formState === 'sent') {
+                <div class="form-success" role="alert">
+                    <div class="form-success__icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    </div>
+                    <p class="form-success__title">MENSAJE TRANSMITIDO</p>
+                    <p class="form-success__sub">Te responderé a la brevedad.</p>
+                    <button class="form-success__reset" (click)="resetForm()">[ NUEVO MENSAJE ]</button>
+                </div>
+            } @else {
+
+                <form
+                        class="form"
+                        [formGroup]="form"
+                        (submit)="onSubmit()"
+                        novalidate
+                        autocomplete="off"
+                >
+
+                    <!-- Nombre -->
+                    <div class="field" [class.field--focus]="focusedField === 'name'" [class.field--valid]="isValid('name')" [class.field--error]="isInvalid('name')">
+                        <label class="field__label" for="f-name">
+                            NOMBRE
+                            @if (isValid('name')) { <span class="field__ok">✓</span> }
+                        </label>
+                        <div class="field__wrap">
+                            <input
+                                    id="f-name"
+                                    class="field__input"
+                                    type="text"
+                                    formControlName="name"
+                                    placeholder="Tu nombre completo"
+                                    (focus)="focusedField = 'name'"
+                                    (blur)="focusedField = null"
+                            />
+                            @if (cursorField === 'name') {
+                                <span class="field__cursor" aria-hidden="true"></span>
+                            }
+                        </div>
+                        @if (isInvalid('name')) {
+                            <span class="field__error">[ CAMPO REQUERIDO — MÍN. 2 CARACTERES ]</span>
+                        }
+                    </div>
+
+                    <!-- Email -->
+                    <div class="field" [class.field--focus]="focusedField === 'email'" [class.field--valid]="isValid('email')" [class.field--error]="isInvalid('email')">
+                        <label class="field__label" for="f-email">
+                            EMAIL DE CONTACTO
+                            @if (isValid('email')) { <span class="field__ok">✓</span> }
+                        </label>
+                        <div class="field__wrap">
+                            <input
+                                    id="f-email"
+                                    class="field__input"
+                                    type="email"
+                                    formControlName="email"
+                                    placeholder="tu@email.com"
+                                    (focus)="focusedField = 'email'"
+                                    (blur)="focusedField = null"
+                            />
+                            @if (cursorField === 'email') {
+                                <span class="field__cursor" aria-hidden="true"></span>
+                            }
+                        </div>
+                        @if (isInvalid('email')) {
+                            <span class="field__error">[ EMAIL INVÁLIDO ]</span>
+                        }
+                    </div>
+
+                    <!-- Asunto -->
+                    <div class="field" [class.field--focus]="focusedField === 'subject'" [class.field--valid]="isValid('subject')" [class.field--error]="isInvalid('subject')">
+                        <label class="field__label" for="f-subject">
+                            ASUNTO
+                            @if (isValid('subject')) { <span class="field__ok">✓</span> }
+                        </label>
+                        <div class="field__wrap">
+                            <input
+                                    id="f-subject"
+                                    class="field__input"
+                                    type="text"
+                                    formControlName="subject"
+                                    placeholder="Motivo del contacto"
+                                    (focus)="focusedField = 'subject'"
+                                    (blur)="focusedField = null"
+                            />
+                            @if (cursorField === 'subject') {
+                                <span class="field__cursor" aria-hidden="true"></span>
+                            }
+                        </div>
+                        @if (isInvalid('subject')) {
+                            <span class="field__error">[ CAMPO REQUERIDO ]</span>
+                        }
+                    </div>
+
+                    <!-- Mensaje -->
+                    <div class="field field--textarea" [class.field--focus]="focusedField === 'message'" [class.field--valid]="isValid('message')" [class.field--error]="isInvalid('message')">
+                        <label class="field__label" for="f-message">
+                            MENSAJE
+                            <span class="field__charcount">{{ charCount('message') }} / 20+</span>
+                            @if (isValid('message')) { <span class="field__ok">✓</span> }
+                        </label>
+                        <div class="field__wrap">
+                            <textarea
+                                    id="f-message"
+                                    class="field__input field__input--textarea"
+                                    formControlName="message"
+                                    placeholder="Escribí tu mensaje aquí..."
+                                    rows="5"
+                                    (focus)="focusedField = 'message'"
+                                    (blur)="focusedField = null"
+                            ></textarea>
+                            @if (cursorField === 'message') {
+                                <span class="field__cursor" aria-hidden="true"></span>
+                            }
+                        </div>
+                        @if (isInvalid('message')) {
+                            <span class="field__error">[ MÍN. 20 CARACTERES ]</span>
+                        }
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="form__footer">
+
+                        <span class="form__status" [class.form__status--ok]="form.valid" aria-live="polite">
+                            @if (form.valid) {
+                                ● LISTO PARA TRANSMITIR
+                            } @else {
+                                ○ COMPLETÁ TODOS LOS CAMPOS
+                            }
+                        </span>
+
+                        <button
+                                class="submit-btn"
+                                type="submit"
+                                [class.submit-btn--sending]="formState === 'sending'"
+                                [disabled]="form.invalid || formState === 'sending'"
+                                aria-label="Enviar mensaje"
+                        >
+                            @if (formState === 'sending') {
+                                <span class="submit-btn__label">TRANSMITIENDO...</span>
+                                <span class="submit-btn__loader" aria-hidden="true"></span>
+                            } @else {
+                                <span class="submit-btn__bracket">[</span>
+                                <span class="submit-btn__label">&nbsp;TRANSMITIR&nbsp;</span>
+                                <span class="submit-btn__bracket">]</span>
+                            }
+                        </button>
+
+                    </div>
+
+                </form>
+            }
+
+        </div>
+
+    </main>
+
+
+</section>
+</app-cockpit-screen-frame>

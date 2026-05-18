@@ -1,0 +1,605 @@
+// ─────────────────────────────────────────────────────────────────
+// TOKENS
+// ─────────────────────────────────────────────────────────────────
+$bg:           #0a0204;
+$accent:       #e8604c;
+$accent-glow:  #ff8070;
+$cyan:         #01F1F1;
+$cyan-dim:     rgba(1, 241, 241, 0.65);
+$green:        #39ff8a;
+$surface:      rgba(232, 96, 76, 0.06);
+$border:       rgba(232, 96, 76, 0.20);
+$border-open:  rgba(232, 96, 76, 0.45);
+
+// ── Contraste corregido: .30 era decoración, no información ──────
+$text-hud:     rgba(232, 96, 76, 0.80);
+$text-meta:    rgba(232, 96, 76, 0.70);
+$text-dim:     rgba(255, 255, 255, 0.70);
+
+$font-display: 'Orbitron', monospace;
+$font-mono:    'Share Tech Mono', monospace;
+
+$ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+$ease-in-out:   cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+// ─────────────────────────────────────────────────────────────────
+// ANIMACIONES
+// ─────────────────────────────────────────────────────────────────
+@keyframes fadein-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes pulse-border {
+  0%, 100% { opacity: .40; }
+  50%       { opacity: .85; }
+}
+
+@keyframes scan {
+  from { top: -2px; }
+  to   { top: 100%; }
+}
+
+@keyframes card-appear {
+  from { opacity: 0; transform: translateY(8px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);   }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// UTILIDAD
+// ─────────────────────────────────────────────────────────────────
+.animate-fadein {
+  opacity: 0;
+  animation: fadein-up .8s $ease-in-out forwards var(--delay, 0s);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// COMPONENTE RAÍZ
+// ─────────────────────────────────────────────────────────────────
+.skills {
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+  background: $bg;
+  display: flex;
+  flex-direction: column;
+  padding: 48px 64px 80px;
+  font-family: $font-mono;
+  cursor: crosshair;
+  overflow-x: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 50% at 50% 20%, rgba(180, 40, 15, 0.10) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// HUD — reducido para no competir con contenido
+// ─────────────────────────────────────────────────────────────────
+.hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.hud__corner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-color: $accent;
+  border-style: solid;
+  animation: pulse-border 4s ease-in-out infinite;
+
+  &--tl { top: 14px; left: 14px;   border-width: 2px 0 0 2px; }
+  &--tr { top: 14px; right: 14px;  border-width: 2px 2px 0 0; }
+  &--bl { bottom: 14px; left: 14px;  border-width: 0 0 2px 2px; animation-delay: .4s; }
+  &--br { bottom: 14px; right: 14px; border-width: 0 2px 2px 0; animation-delay: .8s; }
+}
+
+.hud__line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  // ── Reducida opacidad: era decoración que competía ──────────
+  background: linear-gradient(90deg, transparent 0%, rgba($accent, .06) 20%, rgba($accent, .06) 80%, transparent 100%);
+
+  &--top    { top: 10%;    }
+  &--bottom { bottom: 10%; }
+}
+
+.hud__scanline {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 2px;
+  // ── Más sutil: era ruido visual ─────────────────────────────
+  background: rgba($accent, .03);
+  animation: scan 12s linear 1s infinite;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// HEADER
+// ─────────────────────────────────────────────────────────────────
+.skills__header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 48px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid $border;
+}
+
+.skills__header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.section-tag {
+  font-size: 9px;
+  letter-spacing: 4px;
+  // ── Contraste subido: .5 → .70 ──────────────────────────────
+  color: rgba($accent-glow, .90);
+  text-transform: uppercase;
+}
+
+.section-title {
+  font-family: $font-display;
+  font-size: clamp(22px, 4vw, 36px);
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 8px;
+  text-transform: uppercase;
+  text-shadow: 0 0 28px rgba(232, 96, 76, 0.30);
+  margin: 0;
+}
+
+.skills__header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.header-meta {
+  font-size: 9px;
+  letter-spacing: 3px;
+  // ── Contraste subido: era $text-hud (.30) ───────────────────
+  color: $text-hud;
+  text-transform: uppercase;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// CONTROLES DE EXPANSIÓN — Nuevos estilos
+// ─────────────────────────────────────────────────────────────────
+.skills__controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  z-index: 2;
+  position: relative;
+}
+
+.expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-family: $font-mono;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: crosshair;
+  border: 1px solid;
+  background: none;
+  transition: all .25s $ease-in-out;
+  white-space: nowrap;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    transition: transform .25s $ease-in-out, fill .25s $ease-in-out;
+    flex-shrink: 0;
+  }
+
+  path {
+    transition: fill .25s $ease-in-out;
+  }
+
+  &:hover svg {
+    transform: scale(1.1);
+  }
+
+  &:focus-visible {
+    outline: 1px solid rgba($accent, .80);
+    outline-offset: 2px;
+  }
+
+  // ─ VARIANTE PRIMARY: Acento fuerte (rosa/rojo) ─────────────
+  &--primary {
+    border-color: $accent;
+    color: #fff;
+    background: rgba($accent, 0.25);
+    box-shadow: 0 0 12px rgba($accent, 0.15);
+
+    svg {
+      fill: #fff;
+    }
+
+    &:hover {
+      background: rgba($accent, 0.40);
+      border-color: $accent-glow;
+      box-shadow: 0 0 20px rgba($accent, 0.30);
+      color: #fff;
+
+      svg {
+        fill: #fff;
+      }
+    }
+
+    &:active {
+      background: rgba($accent, 0.35);
+    }
+  }
+
+  // ─ VARIANTE SECONDARY: Outline sutilizado ───────────────────
+  &--secondary {
+    border-color: rgba($cyan, .40);
+    color: rgba($cyan, .70);
+
+    svg {
+      fill: rgba($cyan, .70);
+    }
+
+    &:hover {
+      border-color: rgba($cyan, .70);
+      color: $cyan;
+      background: rgba($cyan, .08);
+
+      svg {
+        fill: $cyan;
+      }
+    }
+
+    &:active {
+      background: rgba($cyan, .05);
+    }
+  }
+}
+
+.header-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.ctrl-btn {
+  background: none;
+  border: 1px solid rgba($cyan, .30);
+  // ── Contraste subido: .45 → .75 — es un CTA funcional ──────
+  color: rgba($cyan, .75);
+  font-family: $font-mono;
+  // ── Tamaño subido: 8px → 9px — mínimo legible ───────────────
+  font-size: 9px;
+  letter-spacing: 2px;
+  // ── Target mayor: 5px 10px → 7px 14px ───────────────────────
+  padding: 7px 14px;
+  text-transform: uppercase;
+  cursor: crosshair;
+  transition: color .2s, border-color .2s, background .2s;
+
+  &:hover {
+    color: $accent;
+    border-color: rgba($accent, .70);
+    background: rgba($accent, .07);
+  }
+
+  // ── Accesibilidad: focus visible ─────────────────────────────
+  &:focus-visible {
+    outline: 1px solid rgba($accent, .80);
+    outline-offset: 2px;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// BODY
+// ─────────────────────────────────────────────────────────────────
+.skills__body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  // ── Gap aumentado: 4px → 8px — más respiración entre cats ───
+  gap: 8px;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// CATEGORÍA
+// ─────────────────────────────────────────────────────────────────
+.category {
+  border: 1px solid $border;
+  background: rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  transition: border-color .3s $ease-in-out;
+
+  &:has(.category__header--open) {
+    border-color: $border-open;
+  }
+}
+
+.category__header {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 44px 1fr auto auto 32px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: none;
+  border: none;
+  cursor: crosshair;
+  transition: background .2s $ease-in-out;
+  text-align: left;
+
+  &:hover {
+    // ── Hover más pronunciado ────────────────────────────────
+    background: rgba($accent, .07);
+
+    // ── ELIMINADO: letter-spacing dinámico causaba layout shift
+  }
+
+  &--open {
+    background: rgba($accent, .05);
+
+    .category__status { color: rgba($cyan, .80); }
+    .category__id     { color: rgba($accent, .90); }
+
+    border-left: 2px solid $accent;
+    padding-left: 18px;
+  }
+
+  // ── Accesibilidad: focus visible ─────────────────────────────
+  &:focus-visible {
+    outline: 1px solid rgba($accent, .70);
+    outline-offset: -2px;
+  }
+}
+
+.category__id {
+  font-family: $font-display;
+  font-size: 10px;
+  font-weight: 700;
+  // ── Contraste subido: .35 → .55 ─────────────────────────────
+  color: rgba($accent, .55);
+  letter-spacing: 2px;
+  transition: color .25s;
+  user-select: none;
+}
+
+.category__name-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.category__codename {
+  font-family: $font-display;
+  font-size: 13px;
+  font-weight: 700;
+  // ── Contraste subido: .8 → .95 — es el nombre principal ─────
+  color: rgba(#fff, .95);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  // ── ELIMINADO: transition de letter-spacing (layout shift) ───
+  white-space: nowrap;
+}
+
+.category__label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  // ── Contraste subido: .4 → .60 ──────────────────────────────
+  color: rgba($accent, .60);
+  text-transform: uppercase;
+}
+
+.category__count {
+  font-size: 9px;
+  letter-spacing: 2px;
+  // ── Contraste subido: .3 → .50 ──────────────────────────────
+  color: rgba($accent-glow, .70);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.category__status {
+  font-size: 8px;
+  letter-spacing: 2px;
+  // ── Contraste subido: .3 → .50 ──────────────────────────────
+  color: rgba($cyan, .50);
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-align: right;
+  transition: color .25s;
+}
+
+.category__chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .35s $ease-in-out;
+  // ── Contraste subido ────────────────────────────────────────
+  color: rgba($accent, .60);
+
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+  }
+
+  &--open { transform: rotate(180deg); }
+}
+
+.category__body {
+  overflow: hidden;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// GRID DE SKILLS
+// ─────────────────────────────────────────────────────────────────
+.skills__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  // ── Gap aumentado: 8px → 10px ───────────────────────────────
+  gap: 10px;
+  padding: 16px 20px 20px;
+  border-top: 1px solid rgba($accent, .12);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// SKILL CARD
+// ─────────────────────────────────────────────────────────────────
+.skill-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px 12px 14px;
+  border: 1px solid rgba($accent, .18);
+  background: rgba($accent, .03);
+  cursor: crosshair;
+
+  opacity: 0;
+  animation: card-appear .4s $ease-out-expo forwards;
+  animation-delay: calc(var(--si, 0) * 40ms);
+
+  transition:
+          border-color  .25s $ease-in-out,
+          background    .25s $ease-in-out,
+          transform     .25s $ease-out-expo,
+            // ── box-shadow en transition (sin conflicto con card-appear) ─
+          box-shadow    .25s $ease-in-out;
+
+  &:hover {
+    border-color: rgba($cyan, .45);
+    background: rgba($cyan, .05);
+    transform: translateY(-2px);
+    // ── CORREGIDO: glow via box-shadow, no animation override ───
+    box-shadow: 0 0 16px rgba(1, 241, 241, 0.10);
+
+    .skill-card__icon      { border-color: rgba($cyan, .50); }
+    .skill-card__svg       { fill: $cyan; }
+    .skill-card__initials  { color: $cyan; }
+    // ── ELIMINADO: letter-spacing dinámico (layout shift) ───────
+    .skill-card__name      { color: rgba(#fff, .90); }
+    .skill-card__c         { opacity: .60; }
+  }
+
+  // ── Solo esquina TL: reducir ruido manteniendo identidad ────
+  &__c {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-color: $accent;
+    border-style: solid;
+    // ── Opacidad reducida: .3 → .20 ─────────────────────────
+    opacity: .20;
+    transition: opacity .25s;
+
+    &--tl { top: 4px; left: 4px; border-width: 1px 0 0 1px; }
+  }
+}
+
+.skill-card__icon {
+  width: 42px;
+  height: 42px;
+  // ── Borde más visible: .25 → .35 ────────────────────────────
+  border: 1px solid rgba($accent, .35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color .25s;
+}
+
+.skill-card__svg {
+  width: 22px;
+  height: 22px;
+  // ── Contraste subido: .7 → .85 ──────────────────────────────
+  fill: rgba($accent, .85);
+  transition: fill .25s;
+}
+
+.skill-card__image {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  opacity: 0.85;
+  transition: opacity .25s;
+}
+
+.skill-card__initials {
+  font-family: $font-display;
+  font-size: 12px;
+  font-weight: 700;
+  // ── Contraste subido: .65 → .85 ─────────────────────────────
+  color: rgba($accent, .85);
+  letter-spacing: 1px;
+  transition: color .25s;
+}
+
+.skill-card__name {
+  // ── Tamaño subido: 8px → 9px ────────────────────────────────
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  // ── Contraste subido: .45 → .70 — es el label principal ─────
+  color: rgba(#fff, .70);
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.4;
+  // ── ELIMINADO: letter-spacing en transition (layout shift) ───
+  transition: color .25s;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// BARRA INFERIOR HUD
+// ─────────────────────────────────────────────────────────────────
+.sys-bar {
+  position: fixed;
+  bottom: 20px;
+  left: 28px;
+  z-index: 10;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: $text-hud;
+  text-transform: uppercase;
+  pointer-events: none;
+  // ── Opacidad subida: .30 → .50 — es información real ────────
+  opacity: .50;
+}
+
+// ─────────────────────────────────────────────────────────────────
+// RESPONSIVE
+// ─────────────────────────────────────────────────────────────────
+@media (max-width: 900px) {
+  .skills { padding: 32px 28px 64px; }
+  .skills__header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .skills__header-right { align-items: flex-start; }
+}
+
+@media (max-width: 600px) {
+  .category__header {
+    grid-template-columns: 36px 1fr auto 28px;
+    .category__status { display: none; }
+  }
+
+  .skills__grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; }
+  .skill-card   { padding: 14px 8px 12px; }
+}
