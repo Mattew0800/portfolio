@@ -39,7 +39,7 @@ export class AboutComponent implements OnInit, AfterViewInit, OnDestroy {
     readonly NAME      = 'MATIAS OYHAMBURU';
     readonly ROLE      = 'DISPONIBLE';
     readonly PHOTO_URL = 'assets/about/photo.jpeg';
-    private readonly CV_URL = 'https://drive.google.com/file/d/17uvZf02etTM55g3sbO6fAbamXOH_JGxW/view?usp=drive_link';
+    private readonly CV_URL = 'https://drive.google.com/uc?export=download&id=17uvZf02etTM55g3sbO6fAbamXOH_JGxW';
     private readonly CV_NAME = 'Matias_Oyhamburu_CV.pdf';
 
     readonly BIO = `Soy Desarrollador Full Stack Junior egresado de la Tecnicatura Universitaria en Programación (UTN), con experiencia y especial interés en el desarrollo frontend utilizando Angular, TypeScript, RxJS y SCSS para construir aplicaciones web modernas, escalables y mantenibles, con foco en la experiencia de usuario y la calidad técnica.
@@ -108,8 +108,7 @@ export class AboutComponent implements OnInit, AfterViewInit, OnDestroy {
         this.modalService.logDownloadAction(this.CV_NAME);
 
         const a = document.createElement('a');
-        a.href = this.CV_URL; // Usas la constante
-        a.target = '_blank'; // Recomendado para abrir en nueva pestaña
+        a.href = this.CV_URL;
         a.click();
     }
 
